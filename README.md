@@ -1,6 +1,6 @@
 # build-pkg
 
-This GitHub action builds a gap package.
+This GitHub action builds a GAP package.
 
 ## Usage
 
