@@ -5,6 +5,10 @@ inputs:
     description: 'set to 32 to use 32bit build flags for the package'
     required: false
     default: ''
+  coverage:
+    description: 'Boolean that determines whether code coverage is turned by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.'
+    required: false
+    default: 'true'
   CONFIGFLAGS:
     description: 'additional arguments to be passed to configure'
     required: false
@@ -22,7 +26,7 @@ runs:
        GAPROOT=${GAPROOT-$HOME/gap}
 
        # ensure coverage is turned on
-       if [[ -z $NO_COVERAGE ]]; then
+       if [[ "${{ inputs.coverage }}" = "true" ]]; then
            export CFLAGS="$CFLAGS --coverage"
            export CXXFLAGS="$CXXFLAGS --coverage"
            export LDFLAGS="$LDFLAGS --coverage"
