@@ -115,7 +115,7 @@ runs:
             done := JoinStringsWithSeparator( done, " " );;
             
             Print( "Final list: ", done );
-            PrintTo( ""__GAP_PKGS_TO_BUILD__.txt"", done );
+            PrintTo( "__GAP_PKGS_TO_BUILD__.txt", done );
             
             QUIT;
         GAPInput
