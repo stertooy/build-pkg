@@ -20,6 +20,7 @@ runs:
   using: "composite"
   steps:
     - name: "Prepare the package"
+      shell: bash
       run: |
        set -ex
 
@@ -54,4 +55,77 @@ runs:
            ./configure ${{ inputs.CONFIGFLAGS }} $GAPROOT
            make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
        fi
+
+    - name: "Determine dependencies"
       shell: bash
+      run: |
+        $GAP -A -q <<GAPInput
+            # Get the name of this package
+            Read("PackageInfo.g");;
+            orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );;
+
+            todo := [ orig ];;
+            done := [];;
+
+            while not IsEmpty( todo ) do
+                curr := Remove( todo );
+                AddSet( done, curr );
+                info := GAPInfo.PackagesInfo.(curr)[1];
+
+                # Needed packages
+                if IsBound( info.Dependencies.NeededOtherPackages ) then
+                    for pkg in info.Dependencies.NeededOtherPackages do
+                        name := LowercaseString( pkg[1] );
+                        Print( " Package '", curr, "' needs package '", name, "'\n" );
+                        if not name in done then
+                            AddSet( todo, name );
+                        fi;
+                    od;
+                fi;
+
+                # Suggested packages
+                if IsBound( info.Dependencies.SuggestedOtherPackages ) then
+                    for pkg in info.Dependencies.SuggestedOtherPackages do
+                        name := LowercaseString( pkg[1] );
+                        Print( " Package '", curr, "' suggests package '", name, "'\n" );
+                        if not name in done then
+                            AddSet( todo, name );
+                        fi;
+                    od;
+                fi;
+
+                # Package extensions
+                if IsBound( info.Extensions ) then
+                    for ext in info.Extensions do
+                        for pkg in ext.needed do
+                            name := LowercaseString( pkg[1] );
+                            Print( " Package '", curr, "' has an extension that needs package '", name, "'\n" );
+                            if not name in done then
+                                AddSet( todo, name );
+                            fi;
+                        od;
+                    od;
+                fi;
+            od;
+
+            # We already built the package being tested!
+            RemoveSet( done, orig );;
+
+            # Cannot use RUNNER_TEMP on Cygwin...
+            PrintTo( "__GAP_PKGS_TO_BUILD__.txt", JoinStringsWithSeparator( done, " " ) );
+            
+            QUIT;
+        GAPInput
+
+        # ... so put the contents in an environement variable ...
+        echo "GAP_PKGS_TO_BUILD=$(cat __GAP_PKGS_TO_BUILD__.txt)" | tee -a $GITHUB_ENV
+
+        # ... and we ensure no file is left behind.
+        rm __GAP_PKGS_TO_BUILD__.txt
+
+    - name: "Install dependencies"
+      shell: bash
+      run: |
+        # Cannot use 'working-directory' on Cygwin, so we use cd instead
+        cd $GAPROOT/pkg
+        ../bin/BuildPackages.sh --strict $GAP_PKGS_TO_BUILD
