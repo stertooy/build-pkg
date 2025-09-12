@@ -59,8 +59,6 @@ runs:
     - name: "Gather dependencies"
       shell: bash
       run: |
-        set -x
-        GAP_PKGS_TO_BUILD=$(
         $GAP -A -q <<GAPInput
             # Get the name of this package
             Read("PackageInfo.g");
@@ -117,12 +115,13 @@ runs:
             done := JoinStringsWithSeparator( done, " " );;
             
             Print( "Final list: ", done );
-            PrintTo( *stdout*, done );
+            PrintTo( ""__GAP_PKGS_TO_BUILD__.txt"", done );
             
             QUIT;
         GAPInput
-        )
-        echo "GAP_PKGS_TO_BUILD=$GAP_PKGS_TO_BUILD" | tee -a $GITHUB_ENV
+        
+        echo "GAP_PKGS_TO_BUILD=$(cat __GAP_PKGS_TO_BUILD__.txt)" | tee -a $GITHUB_ENV
+        rm __GAP_PKGS_TO_BUILD__.txt
 
     - name: "Install dependencies"
       shell: bash
