@@ -19,7 +19,7 @@ env:
 runs:
   using: "composite"
   steps:
-    - name: "Prepare the package"
+    - name: "Build the package itself"
       shell: bash
       run: |
        set -ex
@@ -56,7 +56,7 @@ runs:
            make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
        fi
 
-    - name: "Determine dependencies"
+    - name: "Determine the package's dependencies"
       shell: bash
       run: |
         $GAP -A -q <<GAPInput
@@ -123,7 +123,7 @@ runs:
         # ... and we ensure no file is left behind.
         rm __GAP_PKGS_TO_BUILD__.txt
 
-    - name: "Install dependencies"
+    - name: "Build the package's dependencies"
       shell: bash
       run: |
         # Cannot use 'working-directory' on Cygwin, so we use cd instead
