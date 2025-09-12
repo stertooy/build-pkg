@@ -126,7 +126,6 @@ runs:
     - name: "Install dependencies"
       shell: bash
       run: |
-        # Cannot use 'working-directory' on Cygwin, so we cd
+        # Cannot use 'working-directory' on Cygwin, so we use cd instead
         cd $GAPROOT/pkg
         ../bin/BuildPackages.sh --strict $GAP_PKGS_TO_BUILD
-        
