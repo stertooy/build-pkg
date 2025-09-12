@@ -102,6 +102,7 @@ runs:
             od;
             Print(done);
             # ... Write "done" to some file/variable
+            QUIT;
         GAPInput           
     - name: "Install dependencies"
       shell: bash
