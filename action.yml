@@ -110,7 +110,7 @@ runs:
             od;
 
             # We already built the package being tested!
-            RemoveSet( done, name );;
+            RemoveSet( done, orig );;
 
             # Turn list to string
             done := JoinStringsWithSeparator( done, " " );;
