@@ -56,13 +56,13 @@ runs:
            make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
        fi
 
-    - name: "Gather dependencies"
+    - name: "Determine dependencies"
       shell: bash
       run: |
         $GAP -A -q <<GAPInput
             # Get the name of this package
-            Read("PackageInfo.g");
-            orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );
+            Read("PackageInfo.g");;
+            orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );;
 
             todo := [ orig ];;
             done := [];;
@@ -76,7 +76,7 @@ runs:
                 if IsBound( info.Dependencies.NeededOtherPackages ) then
                     for pkg in info.Dependencies.NeededOtherPackages do
                         name := LowercaseString( pkg[1] );
-                        Print(curr, " has needed package ", name, "\n");
+                        Print( " Package '", curr, "' needs package '", name, "'\n" );
                         if not name in done then
                             AddSet( todo, name );
                         fi;
@@ -87,7 +87,7 @@ runs:
                 if IsBound( info.Dependencies.SuggestedOtherPackages ) then
                     for pkg in info.Dependencies.SuggestedOtherPackages do
                         name := LowercaseString( pkg[1] );
-                        Print(curr, " has suggested package ", name, "\n");
+                        Print( " Package '", curr, "' suggests package '", name, "'\n" );
                         if not name in done then
                             AddSet( todo, name );
                         fi;
@@ -99,7 +99,7 @@ runs:
                     for ext in info.Extensions do
                         for pkg in ext.needed do
                             name := LowercaseString( pkg[1] );
-                            Print(curr, " has extension with needed package ", name, "\n");
+                            Print( " Package '", curr, "' has an extension that needs package '", name, "'\n" );
                             if not name in done then
                                 AddSet( todo, name );
                             fi;
@@ -111,21 +111,22 @@ runs:
             # We already built the package being tested!
             RemoveSet( done, orig );;
 
-            # Turn list to string
-            done := JoinStringsWithSeparator( done, " " );;
-            
-            Print( "Final list: ", done );
-            PrintTo( "__GAP_PKGS_TO_BUILD__.txt", done );
+            # Cannot use RUNNER_TEMP on Cygwin...
+            PrintTo( "__GAP_PKGS_TO_BUILD__.txt", JoinStringsWithSeparator( done, " " ) );
             
             QUIT;
         GAPInput
-        
+
+        # ... so put the contents in an environement variable ...
         echo "GAP_PKGS_TO_BUILD=$(cat __GAP_PKGS_TO_BUILD__.txt)" | tee -a $GITHUB_ENV
+
+        # ... and we ensure no file is left behind.
         rm __GAP_PKGS_TO_BUILD__.txt
 
     - name: "Install dependencies"
       shell: bash
-      working-directory: ${{ ENV.GAPROOT }}/pkg
       run: |
+        # Cannot use 'working-directory' on Cygwin, so we cd
+        cd $GAPROOT/pkg
         ../bin/BuildPackages.sh --strict $GAP_PKGS_TO_BUILD
         
