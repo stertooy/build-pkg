@@ -122,5 +122,7 @@ runs:
     - name: "Install dependencies"
       shell: bash
       working-directory: ${{ ENV.GAPROOT }}/pkg
-      run: ../bin/BuildPackages.sh --strict "$(cat "$RUNNER_TEMP/pkgs.txt")"
+      run: |
+        pkgs=$(cat "$RUNNER_TEMP/pkgs.txt")
+        ../bin/BuildPackages.sh --strict $pkgs
         
