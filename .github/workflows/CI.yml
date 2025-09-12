@@ -35,4 +35,15 @@ jobs:
         with:
           path: this-action/
       - uses: gap-actions/setup-gap@v3
+      - run: |
+          # The IO package should not be built by default
+          $GAP -A -q <<GAPInput
+              QUIT_GAP(TestPackageAvailability("io") = fail);
+          GAPInput
       - uses: ./this-action/
+      - run: |
+          # Example needs GAPDoc and GAPDoc suggests IO
+          # So IO should have been built
+          $GAP -A -q <<GAPInput
+              QUIT_GAP(TestPackageAvailability("io") <> fail);
+          GAPInput
