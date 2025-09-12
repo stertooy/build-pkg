@@ -60,6 +60,7 @@ runs:
       shell: bash
       run: |
         set -x
+        GAP_PKGS_TO_BUILD=$(
         $GAP -A -q <<GAPInput
             # Get the name of this package
             Read("PackageInfo.g");
@@ -115,17 +116,18 @@ runs:
             # Turn list to string
             done := JoinStringsWithSeparator( done, " " );;
             Print( "Final list: ", done );
-
-            # Print to a file that can be read by subsequent steps in the workflow
-            PrintTo( "$RUNNER_TEMP/pkgs.txt", done );
-
+            out := OutputTextUser();
+            PrintTo( out, done );
+            CloseStream(out);
+            
             QUIT;
         GAPInput
+        )
+        echo "GAP_PKGS_TO_BUILD=$GAP_PKGS_TO_BUILD" | tee -a $GITHUB_ENV
 
     - name: "Install dependencies"
       shell: bash
       working-directory: ${{ ENV.GAPROOT }}/pkg
       run: |
-        pkgs=$(cat "$RUNNER_TEMP/pkgs.txt")
-        ../bin/BuildPackages.sh --strict $pkgs
+        ../bin/BuildPackages.sh --strict $GAP_PKGS_TO_BUILD
         
