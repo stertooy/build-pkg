@@ -109,8 +109,12 @@ runs:
             # We already built the package being tested!
             RemoveSet( done, name );
 
+            # Turn list to string
+            done := JoinStringsWithSeparator( done, " " );
+            Print( done );
+
             # Print to a file that can be read by subsequent steps in the workflow
-            PrintTo( "$RUNNER_TEMP/pkgs.txt", JoinStringsWithSeparator( done, " " ) );
+            PrintTo( "$RUNNER_TEMP/pkgs.txt", done );
 
             QUIT;
         GAPInput     
