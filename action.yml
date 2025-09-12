@@ -55,42 +55,48 @@ runs:
            ./configure ${{ inputs.CONFIGFLAGS }} $GAPROOT
            make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
        fi
+
     - name: "Gather dependencies"
       shell: bash
       run: |
         set -x
         $GAP -A <<GAPInput
+            # Get the name of this package
             Read("PackageInfo.g");
-            name := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );
+            orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );
 
-            todo := [ name ];
+            todo := [ orig ];
             done := [];
-            
+
             while not IsEmpty( todo ) do
                 pkg := Remove( todo );
                 AddSet( done, pkg );
                 info := GAPInfo.PackagesInfo.(pkg)[1];
-                deps := info.Dependencies;
-                if IsBound( deps.NeededOtherPackages ) then
-                    for pkg in deps.NeededOtherPackages do
+
+                # Needed packages
+                if IsBound( info.Dependencies.NeededOtherPackages ) then
+                    for pkg in info.Dependencies.NeededOtherPackages do
                         name := LowercaseString( pkg[1] );
                         if not name in done then
                             AddSet( todo, name );
                         fi;
                     od;
                 fi;
-                if IsBound( deps.SuggestedOtherPackages ) then
-                    for pkg in deps.SuggestedOtherPackages do
+
+                # Suggested packages
+                if IsBound( info.Dependencies.SuggestedOtherPackages ) then
+                    for pkg in info.Dependencies.SuggestedOtherPackages do
                         name := LowercaseString( pkg[1] );
                         if not name in done then
                             AddSet( todo, name );
                         fi;
                     od;
                 fi;
+
+                # Package extensions
                 if IsBound( info.Extensions ) then
                     for ext in info.Extensions do
-                        ndd := ext.needed;
-                        for pkg in ndd do
+                        for pkg in ext.needed do
                             name := LowercaseString( pkg[1] );
                             if not name in done then
                                 AddSet( todo, name );
@@ -98,16 +104,19 @@ runs:
                         od;
                     od;
                 fi;
-                # Also add extensions?
             od;
-            Print(done);
+
+            # We already built the package being tested!
+            RemoveSet( done, name );
+
+            # Print to a file that can be read by subsequent steps in the workflow
             PrintTo( "$RUNNER_TEMP/pkgs.txt", JoinStringsWithSeparator( done, " " ) );
+
             QUIT;
-        GAPInput           
+        GAPInput     
+
     - name: "Install dependencies"
       shell: bash
-      run: |
-        cat $RUNNER_TEMP/pkgs.txt
-        # TODO: cd $GAPROOT/pkg &&  ../bin/BuildPackages.sh --strict pkgA pkgB pkgC
-        # NOTE: make sure to check folders well? IO should not build IO_ForHomAlg...
+      working-directory: ${{ ENV.GAPROOT }}/pkg
+      run: ../bin/BuildPackages.sh --strict "$(cat "$RUNNER_TEMP/pkgs.txt")"
         
