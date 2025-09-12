@@ -60,23 +60,24 @@ runs:
       shell: bash
       run: |
         set -x
-        $GAP -A <<GAPInput
+        $GAP -A -q <<GAPInput
             # Get the name of this package
             Read("PackageInfo.g");
             orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );
 
-            todo := [ orig ];
-            done := [];
+            todo := [ orig ];;
+            done := [];;
 
             while not IsEmpty( todo ) do
-                pkg := Remove( todo );
-                AddSet( done, pkg );
-                info := GAPInfo.PackagesInfo.(pkg)[1];
+                curr := Remove( todo );
+                AddSet( done, curr );
+                info := GAPInfo.PackagesInfo.(curr)[1];
 
                 # Needed packages
                 if IsBound( info.Dependencies.NeededOtherPackages ) then
                     for pkg in info.Dependencies.NeededOtherPackages do
                         name := LowercaseString( pkg[1] );
+                        Print(curr, " has needed package ", name, "\n");
                         if not name in done then
                             AddSet( todo, name );
                         fi;
@@ -87,6 +88,7 @@ runs:
                 if IsBound( info.Dependencies.SuggestedOtherPackages ) then
                     for pkg in info.Dependencies.SuggestedOtherPackages do
                         name := LowercaseString( pkg[1] );
+                        Print(curr, " has suggested package ", name, "\n");
                         if not name in done then
                             AddSet( todo, name );
                         fi;
@@ -98,6 +100,7 @@ runs:
                     for ext in info.Extensions do
                         for pkg in ext.needed do
                             name := LowercaseString( pkg[1] );
+                            Print(curr, " has extension with needed package ", name, "\n");
                             if not name in done then
                                 AddSet( todo, name );
                             fi;
@@ -107,17 +110,17 @@ runs:
             od;
 
             # We already built the package being tested!
-            RemoveSet( done, name );
+            RemoveSet( done, name );;
 
             # Turn list to string
-            done := JoinStringsWithSeparator( done, " " );
-            Print( done );
+            done := JoinStringsWithSeparator( done, " " );;
+            Print( "Final list: ", done );
 
             # Print to a file that can be read by subsequent steps in the workflow
             PrintTo( "$RUNNER_TEMP/pkgs.txt", done );
 
             QUIT;
-        GAPInput     
+        GAPInput
 
     - name: "Install dependencies"
       shell: bash
