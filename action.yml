@@ -20,6 +20,7 @@ runs:
   using: "composite"
   steps:
     - name: "Prepare the package"
+      shell: bash
       run: |
        set -ex
 
@@ -54,4 +55,57 @@ runs:
            ./configure ${{ inputs.CONFIGFLAGS }} $GAPROOT
            make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
        fi
+    - name: "Gather dependencies"
       shell: bash
+      run: |
+        set -x
+        $GAP -A <<GAPInput
+            Read("PackageInfo.g");
+            name := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );
+
+            todo := [ name ];
+            done := [];
+            
+            while not IsEmpty( todo ) do
+                pkg := Remove( todo );
+                AddSet( done, pkg );
+                info := GAPInfo.PackagesInfo.(pkg)[1];
+                deps := info.Dependencies;
+                if IsBound( deps.NeededOtherPackages ) then
+                    for pkg in deps.NeededOtherPackages do
+                        name := LowercaseString( pkg[1] );
+                        if not name in done then
+                            AddSet( todo, name );
+                        fi;
+                    od;
+                fi;
+                if IsBound( deps.SuggestedOtherPackages ) then
+                    for pkg in deps.SuggestedOtherPackages do
+                        name := LowercaseString( pkg[1] );
+                        if not name in done then
+                            AddSet( todo, name );
+                        fi;
+                    od;
+                fi;
+                if IsBound( info.Extensions ) then
+                    for ext in info.Extensions do
+                        ndd := ext.needed;
+                        for pkg in ndd do
+                            name := LowercaseString( pkg[1] );
+                            if not name in done then
+                                AddSet( todo, name );
+                            fi;
+                        od;
+                    od;
+                fi;
+                # Also add extensions?
+            od;
+            Print(done);
+            # ... Write "done" to some file/variable
+        GAPInput           
+    - name: "Install dependencies"
+      shell: bash
+      run: |
+        # TODO: cd $GAPROOT/pkg &&  ../bin/BuildPackages.sh --strict pkgA pkgB pkgC
+        # NOTE: make sure to check folders well? IO should not build IO_ForHomAlg...
+        
