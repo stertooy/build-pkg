@@ -115,10 +115,9 @@ runs:
 
             # Turn list to string
             done := JoinStringsWithSeparator( done, " " );;
+            
             Print( "Final list: ", done );
-            out := OutputTextString( "", true );
-            PrintTo( out, done );
-            CloseStream(out);
+            PrintTo( *stdout*, done );
             
             QUIT;
         GAPInput
