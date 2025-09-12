@@ -101,7 +101,7 @@ runs:
                 # Also add extensions?
             od;
             Print(done);
-            PrintTo( "$RUNNER_TEMP/pkgs.txt", done )
+            PrintTo( "$RUNNER_TEMP/pkgs.txt", done );
             QUIT;
         GAPInput           
     - name: "Install dependencies"
