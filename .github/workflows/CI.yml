@@ -36,3 +36,5 @@ jobs:
           path: this-action/
       - uses: gap-actions/setup-gap@v3
       - uses: ./this-action/
+        with:
+          build-suggested-pkgs: 'recursive'
