@@ -31,7 +31,8 @@ All of the following inputs are optional.
 ### What's new in v3
 
 - The inputs `build-needed-pkgs`, `build-suggested-pkgs` and `build-extensions` were
-  added.
+  added. Setting these to `true` will also compile the relevant dependencies, and setting
+  them to `recursive` will also compile the dependencies' dependencies, etc.
 
 ### What's new in v2
 
