@@ -32,6 +32,32 @@ env:
 runs:
   using: "composite"
   steps:
+    - name: "Validate input"
+      shell: bash
+      run: |
+        validate_boolean() {
+          local input=$1
+          local option_name=$2
+          if ! [[ "$input" =~ ^(true|false)$ ]]; then
+            echo "::error::Invalid value for option $option_name. Expected 'true' or 'false', but found '$input'"
+            exit 1;
+          fi
+        }
+
+        validate_opts() {
+          local input=$1
+          local option_name=$2
+          if ! [[ "$input" =~ ^(true|false|recursive)$ ]]; then
+            echo "::error::Invalid value for option $option_name. Expected 'true', 'false' or 'recursive' but found '$input'"
+            exit 1;
+          fi
+        }
+
+        validate_boolean "${{ inputs.coverage }}" coverage
+        validate_opts "${{ inputs.build-needed-pkgs }}" build-needed-pkgs
+        validate_opts "${{ inputs.build-suggested-pkgs }}" build-suggested-pkgs
+        validate_opts "${{ inputs.build-extensions }}" build-extensions
+
     - name: "Build the package itself"
       shell: bash
       run: |
