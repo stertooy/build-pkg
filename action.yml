@@ -32,115 +32,141 @@ env:
 runs:
   using: "composite"
   steps:
+    - name: "Validate input"
+      shell: bash
+      run: |
+        validate_boolean() {
+          local input=$1
+          local option_name=$2
+          if ! [[ "$input" =~ ^(true|false)$ ]]; then
+            echo "::error::Invalid value for option $option_name. Expected 'true' or 'false', but found '$input'"
+            exit 1;
+          fi
+        }
+
+        validate_opts() {
+          local input=$1
+          local option_name=$2
+          if ! [[ "$input" =~ ^(true|false|recursive)$ ]]; then
+            echo "::error::Invalid value for option $option_name. Expected 'true', 'false' or 'recursive' but found '$input'"
+            exit 1;
+          fi
+        }
+
+        validate_boolean "${{ inputs.coverage }}" coverage
+        validate_opts "${{ inputs.build-needed-pkgs }}" build-needed-pkgs
+        validate_opts "${{ inputs.build-suggested-pkgs }}" build-suggested-pkgs
+        validate_opts "${{ inputs.build-extensions }}" build-extensions
+
     - name: "Build the package itself"
       shell: bash
       run: |
-       set -ex
+        set -ex
 
-       GAPROOT=${GAPROOT-$HOME/gap}
+        GAPROOT=${GAPROOT-$HOME/gap}
 
-       # ensure coverage is turned on
-       if [[ "${{ inputs.coverage }}" = "true" ]]; then
-           export CFLAGS="$CFLAGS --coverage"
-           export CXXFLAGS="$CXXFLAGS --coverage"
-           export LDFLAGS="$LDFLAGS --coverage"
-       fi
+        # ensure coverage is turned on
+        if [[ "${{ inputs.coverage }}" = "true" ]]; then
+          export CFLAGS="$CFLAGS --coverage"
+          export CXXFLAGS="$CXXFLAGS --coverage"
+          export LDFLAGS="$LDFLAGS --coverage"
+        fi
 
-       # adjust build flags for 32bit builds
-       if [[ "${{ inputs.ABI }}" = 32 ]]; then
-           export CFLAGS="$CFLAGS -m32"
-           export CXXFLAGS="$CXXFLAGS -m32"
-           export LDFLAGS="$LDFLAGS -m32"
-       fi
+        # adjust build flags for 32bit builds
+        if [[ "${{ inputs.ABI }}" = 32 ]]; then
+          export CFLAGS="$CFLAGS -m32"
+          export CXXFLAGS="$CXXFLAGS -m32"
+          export LDFLAGS="$LDFLAGS -m32"
+        fi
 
-       # build this package, if necessary
-       if [[ -x prerequisites.sh ]]; then
-           ./prerequisites.sh $GAPROOT
-       fi
-       if [[ -x autogen.sh ]]; then
-           ./autogen.sh
-       fi
-       if grep Autoconf ./configure > /dev/null
-       then
-           ./configure --with-gaproot=$GAPROOT ${{ inputs.CONFIGFLAGS }}
-           make -j4 V=1
-       elif [[ -x configure ]]; then
-           ./configure ${{ inputs.CONFIGFLAGS }} $GAPROOT
-           make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
-       fi
+        # build this package, if necessary
+        if [[ -x prerequisites.sh ]]; then
+          ./prerequisites.sh $GAPROOT
+        fi
+        if [[ -x autogen.sh ]]; then
+          ./autogen.sh
+        fi
+        if grep Autoconf ./configure > /dev/null
+        then
+          ./configure --with-gaproot=$GAPROOT ${{ inputs.CONFIGFLAGS }}
+          make -j4 V=1
+        elif [[ -x configure ]]; then
+          ./configure ${{ inputs.CONFIGFLAGS }} $GAPROOT
+          make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
+        fi
 
     - name: "Determine the package's dependencies"
       shell: bash
       run: |
         $GAP -A -q <<GAPInput
-            # Get the name of this package
-            Read("PackageInfo.g");;
-            orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );;
+          # Get the name of this package
+          Read("PackageInfo.g");;
+          orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );;
 
-            todo := [ orig ];;
-            done := [];;
-            depth := 1;
+          todo := [ orig ];;
+          done := [];;
+          depth := 1;
 
-            while not IsEmpty( todo ) do
-                curr := Remove( todo );
-                Print( "Now handling package '", curr, "' (depth ",depth,")\n");
-                AddSet( done, curr );
-                info := GAPInfo.PackagesInfo.(curr)[1];
+          while not IsEmpty( todo ) do
+            curr := Remove( todo );
+            Print( "Now handling package '", curr, "' (depth ",depth,")\n");
+            AddSet( done, curr );
+            info := GAPInfo.PackagesInfo.(curr)[1];
 
-                # Needed packages
-                if ( IsBound( info.Dependencies.NeededOtherPackages ) and ( 
-                     "${{ inputs.build-needed-pkgs }}" = "recursive" or
-                     ( "${{ inputs.build-needed-pkgs }}" = "true" and depth = 1 )
-                )) then
-                    for pkg in info.Dependencies.NeededOtherPackages do
-                        name := LowercaseString( pkg[1] );
-                        Print( "  - needs package '", name, "'\n" );
-                        if not name in done then
-                            AddSet( todo, name );
-                        fi;
-                    od;
+            # Needed packages
+            if ( IsBound( info.Dependencies.NeededOtherPackages ) and ( 
+              "${{ inputs.build-needed-pkgs }}" = "recursive" or
+              ( "${{ inputs.build-needed-pkgs }}" = "true" and depth = 1 )
+            )) then
+              for pkg in info.Dependencies.NeededOtherPackages do
+                name := LowercaseString( pkg[1] );
+                Print( "  - needs package '", name, "'\n" );
+                if not name in done then
+                  AddSet( todo, name );
                 fi;
+              od;
+            fi;
 
-                # Suggested packages
-                if ( IsBound( info.Dependencies.SuggestedOtherPackages ) and ( 
-                     "${{ inputs.build-suggested-pkgs }}" = "recursive" or
-                     ( "${{ inputs.build-suggested-pkgs }}" = "true" and depth = 1 )
-                )) then
-                    for pkg in info.Dependencies.SuggestedOtherPackages do
-                        name := LowercaseString( pkg[1] );
-                        Print( "  - suggests package '", name, "'\n" );
-                        if not name in done then
-                            AddSet( todo, name );
-                        fi;
-                    od;
+            # Suggested packages
+            if ( IsBound( info.Dependencies.SuggestedOtherPackages ) and ( 
+              "${{ inputs.build-suggested-pkgs }}" = "recursive" or
+              ( "${{ inputs.build-suggested-pkgs }}" = "true" and depth = 1 )
+            )) then
+              for pkg in info.Dependencies.SuggestedOtherPackages do
+                name := LowercaseString( pkg[1] );
+                Print( "  - suggests package '", name, "'\n" );
+                if not name in done then
+                  AddSet( todo, name );
                 fi;
+              od;
+            fi;
 
-                # Package extensions
-                if ( IsBound( info.Extensions ) and ( 
-                     "${{ inputs.build-extensions }}" = "recursive" or
-                     ( "${{ inputs.build-extensions }}" = "true" and depth = 1 )
-                )) then
-                    for ext in info.Extensions do
-                        for pkg in ext.needed do
-                            name := LowercaseString( pkg[1] );
-                            Print( "  - needs package '", name, "' for an extension\n" );
-                            if not name in done then
-                                AddSet( todo, name );
-                            fi;
-                        od;
-                    od;
-                fi;
+            # Package extensions
+            if ( IsBound( info.Extensions ) and ( 
+              "${{ inputs.build-extensions }}" = "recursive" or
+              ( "${{ inputs.build-extensions }}" = "true" and depth = 1 )
+            )) then
+              for ext in info.Extensions do
+                for pkg in ext.needed do
+                  name := LowercaseString( pkg[1] );
+                  Print( "  - needs package '", name, "' for an extension\n" );
+                  if not name in done then
+                    AddSet( todo, name );
+                  fi;
+                od;
+              od;
+            fi;
 
-                depth := depth + 1;;
-            od;
+            depth := depth + 1;;
+          od;
 
-            # We already built the package being tested!
-            RemoveSet( done, orig );;
+          # We already built the package being tested!
+          RemoveSet( done, orig );;
 
-            # Cannot use RUNNER_TEMP on Cygwin...
-            PrintTo( "__GAP_PKGS_TO_BUILD__.txt", JoinStringsWithSeparator( done, " " ) );
-            
-            QUIT;
+          # Cannot use RUNNER_TEMP on Cygwin...
+          PrintTo( "__GAP_PKGS_TO_BUILD__.txt", JoinStringsWithSeparator( done, " " ) );
+          
+          QUIT;
         GAPInput
 
         # ... so put the contents in an environement variable ...

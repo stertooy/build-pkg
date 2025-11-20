@@ -15,6 +15,24 @@ All of the following inputs are optional.
 - `coverage`:
   - Boolean that determines whether code coverage is turned on by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.
   - default: `'true'`
+- `CONFIGFLAGS`:
+  - Additional arguments to be passed to configure.
+  - default: `''`
+- `build-needed-pkgs`:
+  - Build packages needed by this package. Options are: true, false, recursive.
+  - default: `'recursive'`
+- `build-suggested-pkgs`:
+  - Build packages suggested by this package. Options are: true, false, recursive.
+  - default: `'true'`
+- `build-extensions`:
+  - Build packages needed for extensions by this package. Options are: true, false, recursive.
+  - default: `'true'`
+ 
+### What's new in v3
+
+- The inputs `build-needed-pkgs`, `build-suggested-pkgs` and `build-extensions` were
+  added. Setting these to `true` will also compile the relevant dependencies, and setting
+  them to `recursive` will also compile the dependencies' dependencies, etc.
 
 ### What's new in v2
 
@@ -43,9 +61,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: gap-actions/setup-gap@v2
-      - uses: gap-actions/build-pkg@v1
+      - uses: actions/checkout@v5
+      - uses: gap-actions/setup-gap@v3
+      - uses: gap-actions/build-pkg@v3
 ```
 
 ## Contact
