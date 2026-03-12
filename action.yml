@@ -75,12 +75,8 @@ runs:
         if [[ -x autogen.sh ]]; then
           ./autogen.sh
         fi
-        if grep Autoconf ./configure > /dev/null
-        then
+        if [[ -x configure ]]; then
           ./configure --with-gaproot=$GAPROOT ${{ inputs.CONFIGFLAGS }}
-          make -j4 V=1
-        elif [[ -x configure ]]; then
-          ./configure ${{ inputs.CONFIGFLAGS }} $GAPROOT
           make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
         fi
 

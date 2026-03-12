@@ -30,6 +30,8 @@ All of the following inputs are optional.
  
 ### What's new in v3
 
+- Dropped support for GAP packages that have a `configure` script which does not
+  support the `--with-gaproot=PATH` argument.
 - The inputs `build-needed-pkgs`, `build-suggested-pkgs` and `build-extensions` were
   added. Setting these to `true` will also compile the relevant dependencies, and setting
   them to `recursive` will also compile the dependencies' dependencies, etc.
