@@ -33,6 +33,8 @@ All of the following inputs are optional.
 - The inputs `build-needed-pkgs`, `build-suggested-pkgs` and `build-extensions` were
   added. Setting these to `true` will also compile the relevant dependencies, and setting
   them to `recursive` will also compile the dependencies' dependencies, etc.
+- The `ABI` input was dropped. It previously made it easy to build 32-bit versions of
+  packages, but we are phasing that out, so workflows should stop passing this input.
 
 ### What's new in v2
 

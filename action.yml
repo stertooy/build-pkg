@@ -1,10 +1,6 @@
 name: 'Compile GAP package'
 description: 'Compile the given GAP package being tested'
 inputs:
-  ABI:
-    description: 'set to 32 to use 32bit build flags for the package'
-    required: false
-    default: ''
   coverage:
     description: 'Boolean that determines whether code coverage is turned by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.'
     required: false
@@ -70,13 +66,6 @@ runs:
           export CFLAGS="$CFLAGS --coverage"
           export CXXFLAGS="$CXXFLAGS --coverage"
           export LDFLAGS="$LDFLAGS --coverage"
-        fi
-
-        # adjust build flags for 32bit builds
-        if [[ "${{ inputs.ABI }}" = 32 ]]; then
-          export CFLAGS="$CFLAGS -m32"
-          export CXXFLAGS="$CXXFLAGS -m32"
-          export LDFLAGS="$LDFLAGS -m32"
         fi
 
         # build this package, if necessary
