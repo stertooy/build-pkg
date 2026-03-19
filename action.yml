@@ -14,13 +14,21 @@ inputs:
     required: false
     default: 'recursive'
   build-suggested-pkgs:
-    description: 'Build packages suggsted by this package. Options are: true, false, recursive.'
+    description: 'Build packages suggested by this package. Options are: true, false, recursive.'
     required: false
     default: 'true'
   build-extensions:
     description: 'Build packages needed for extensions by this package. Options are: true, false, recursive.'
     required: false
     default: 'true'
+  build-test-pkgs:
+    description: 'Build packages needed for CI testing. Options are: true, false, recursive.'
+    required: false
+    default: 'true'
+  extra-pkgs:
+    description: 'Extra packages to build. Should be a space-separated list.'
+    required: false
+    default: ''
   
 env:
   CHERE_INVOKING: 1
@@ -53,6 +61,7 @@ runs:
         validate_opts "${{ inputs.build-needed-pkgs }}" build-needed-pkgs
         validate_opts "${{ inputs.build-suggested-pkgs }}" build-suggested-pkgs
         validate_opts "${{ inputs.build-extensions }}" build-extensions
+        validate_opts "${{ inputs.build-test-pkgs }}" build-test-pkgs
 
     - name: "Build the package itself"
       shell: bash
@@ -142,6 +151,20 @@ runs:
               od;
             fi;
 
+            # Test packages
+            if ( IsBound( info.Dependencies.TestPackages ) and ( 
+              "${{ inputs.build-test-pkgs }}" = "recursive" or
+              ( "${{ inputs.build-test-pkgs }}" = "true" and depth = 1 )
+            )) then
+              for pkg in info.Dependencies.TestPackages do
+                name := LowercaseString( pkg[1] );
+                Print( "  -  is tested using package '", name, "'\n" );
+                if not name in done then
+                  AddSet( todo, name );
+                fi;
+              od;
+            fi;
+
             depth := depth + 1;;
           od;
 
@@ -165,4 +188,6 @@ runs:
       run: |
         # Cannot use 'working-directory' on Cygwin, so we use cd instead
         cd $GAPROOT/pkg
-        ../bin/BuildPackages.sh --strict $GAP_PKGS_TO_BUILD
+        EXTRA_PKGS_TO_BUILD="${{ inputs.extra-pkgs }}"
+        PKGS_TO_BUILD=$(printf '%s\n' $GAP_PKGS_TO_BUILD $EXTRA_PKGS_TO_BUILD | sort -u | xargs)
+        ../bin/BuildPackages.sh --strict $PKGS_TO_BUILD

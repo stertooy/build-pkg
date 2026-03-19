@@ -27,14 +27,23 @@ All of the following inputs are optional.
 - `build-extensions`:
   - Build packages needed for extensions by this package. Options are: true, false, recursive.
   - default: `'true'`
- 
+- `build-test-pkgs`:
+  - Build packages needed for CI tests for this package. Options are: true, false, recursive.
+  - default: `'true'`
+- `extra-pkgs`:
+  - Extra packages to build. Should be a space-separated list.
+  - default: `''`
+    
 ### What's new in v3
 
 - Dropped support for GAP packages that have a `configure` script which does not
   support the `--with-gaproot=PATH` argument.
-- The inputs `build-needed-pkgs`, `build-suggested-pkgs` and `build-extensions` were
-  added. Setting these to `true` will also compile the relevant dependencies, and setting
-  them to `recursive` will also compile the dependencies' dependencies, etc.
+- The inputs `build-needed-pkgs`, `build-suggested-pkgs`, `build-extensions` and
+  `build-test-pkgs` were added. Setting these to `true` will also compile the relevant
+  dependencies, and setting them to `recursive` will also compile the dependencies'
+  dependencies, etc.
+- The input `extra-pkgs` was added. You can use this to build any additional packages
+  that do not appear in the `PackageInfo.g` file.
 - The `ABI` input was dropped. It previously made it easy to build 32-bit versions of
   packages, but we are phasing that out, so workflows should stop passing this input.
 

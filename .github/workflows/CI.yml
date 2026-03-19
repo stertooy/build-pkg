@@ -16,7 +16,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         gap-version:
           - devel
-          - v4.15.0-beta1
+          - v4.15
           - v4.14
           - v4.13
           - v4.12
@@ -38,3 +38,4 @@ jobs:
       - uses: ./this-action/
         with:
           build-suggested-pkgs: 'recursive'
+          extra-pkgs: 'json profiling'
