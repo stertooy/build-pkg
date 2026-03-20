@@ -160,9 +160,9 @@ runs:
     - name: "Build the package's external dependencies"
       shell: bash
       run: |
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
+        if [[ "${{ runner.os }}" == "Linux" ]] && [[ -n "${SYS_PKGS_TO_BUILD}" ]]; then
           sudo apt-get install --no-install-recommends "${SYS_PKGS_TO_BUILD}"
-        elif [[ "${{ runner.os }}" = "macOS" ]]; then
+        elif [[ "${{ runner.os }}" = "macOS" ]] && [[ -n "${SYS_PKGS_TO_BUILD}" ]]; then
           brew install "${SYS_PKGS_TO_BUILD}"
         fi
 
