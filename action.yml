@@ -21,6 +21,10 @@ inputs:
     description: 'Build packages needed for extensions by this package. Options are: true, false, recursive.'
     required: false
     default: 'true'
+  build-external-deps:
+    description: 'Build external dependencies needed by this package. Options are: true, false.'
+    required: false
+    default: 'true'
   
 env:
   CHERE_INVOKING: 1
@@ -53,6 +57,7 @@ runs:
         validate_opts "${{ inputs.build-needed-pkgs }}" build-needed-pkgs
         validate_opts "${{ inputs.build-suggested-pkgs }}" build-suggested-pkgs
         validate_opts "${{ inputs.build-extensions }}" build-extensions
+        validate_boolean "${{ inputs.build-external-deps }}" build-external-deps
 
     - name: "Build the package itself"
       shell: bash
@@ -159,7 +164,14 @@ runs:
 
         # ... and we ensure no file is left behind.
         rm __GAP_PKGS_TO_BUILD__.txt
-
+        
+    - name: "Build the package's external dependencies"
+      shell: bash
+      run: |
+        # On macos-latest, get HomeBrew...
+        # On ubuntu-latest, get Ubuntu...
+        
+        
     - name: "Build the package's dependencies"
       shell: bash
       run: |
