@@ -39,3 +39,24 @@ jobs:
         with:
           build-suggested-pkgs: 'recursive'
           extra-pkgs: 'json profiling'
+
+  test-testpkgs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        gap-version:
+          - devel
+
+    steps:
+      # the order of the checkout actions is important because all contents of
+      # the target folder of the checkout action is removed
+      - uses: actions/checkout@v6
+        with:
+          repository: stertooy/alnuth
+      - uses: actions/checkout@v6
+        with:
+          path: this-action/
+      - uses: gap-actions/setup-gap@v3
+      - uses: ./this-action/
