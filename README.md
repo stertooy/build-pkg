@@ -31,7 +31,7 @@ All of the following inputs are optional.
   - Build packages needed for CI tests for this package. Options are: true, false, recursive.
   - default: `'true'`
 - `extra-pkgs`:
-  - Extra packages to build. Should be a space-separated list.
+  - Extra packages to build. Should be a space- or newline-separated list.
   - default: `''`
     
 ### What's new in v3
