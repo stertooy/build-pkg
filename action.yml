@@ -176,4 +176,4 @@ runs:
           fi
         done
         
-        ../bin/BuildPackages.sh --strict ${pkgdirs}
+        ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
