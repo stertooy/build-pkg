@@ -167,14 +167,17 @@ runs:
         shopt -s nullglob
         for pkgdir in ${GAP_PKGS_TO_BUILD}; do
           if [[ -d "$pkgdir" ]]; then
-              pkgdirs+=("$pkgdir")
+              echo "Found package directory ${pkgdir}"
+              pkgdirs+=("${pkgdir}")
           else
               matches=("${pkgdir}-"*)
               if ((${#matches[@]})); then
+                  echo "Found package directory ${matches[@]}"
                   pkgdirs+=("${matches[@]}")
               fi
           fi
         done
         echo "Installing packages in ${pkgdirs[@]}"
+        ls -a ./
         
         ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
