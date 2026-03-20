@@ -161,5 +161,19 @@ runs:
       shell: bash
       run: |
         # Cannot use 'working-directory' on Cygwin, so we use cd instead
-        cd $GAPROOT/pkg
-        ../bin/BuildPackages.sh --strict $GAP_PKGS_TO_BUILD
+        cd ${GAPROOT}/pkg
+
+        # Fix for older GAP versions
+        shopt -s nullglob
+        for pkgdir in ${GAP_PKGS_TO_BUILD}; do
+          if [[ -d "$pkgdir" ]]; then
+              pkgdirs+=("$pkgdir")
+          else
+              matches=("${pkgdir}-"*)
+              if ((${#matches[@]})); then
+                  pkgdirs+=("${matches[@]}")
+              fi
+          fi
+        done
+        
+        ../bin/BuildPackages.sh --strict ${pkgdirs}
