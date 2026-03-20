@@ -164,19 +164,19 @@ runs:
         cd ${GAPROOT}/pkg
 
         # Fix for older GAP versions
-        shopt -s nullglob
-        for pkgdir in ${GAP_PKGS_TO_BUILD}; do
-          if [[ -d "$pkgdir" ]]; then
-              echo "Found package directory ${pkgdir}"
-              pkgdirs+=("${pkgdir}")
-          else
-              matches=("${pkgdir}-"*)
-              if ((${#matches[@]})); then
-                  echo "Found package directory ${matches[@]}"
-                  pkgdirs+=("${matches[@]}")
-              fi
-          fi
+        pkgdirs=()
+        for pkgdir in $GAP_PKGS_TO_BUILD; do
+            # Find directory up to capitalisation
+            while IFS= read -r d; do
+                pkgdirs+=("${d#./}")
+            done < <(find . -maxdepth 1 -type d -iname "$pkgdir")
+        
+            # Find directory with version number up to capitalisation
+            while IFS= read -r d; do
+                pkgdirs+=("${d#./}")
+            done < <(find . -maxdepth 1 -type d -iname "${pkgdir}-*")
         done
+        
         echo "Installing packages in ${pkgdirs[@]}"
         ls -a ./
         
