@@ -175,5 +175,6 @@ runs:
               fi
           fi
         done
+        echo "Installing packages in ${pkgdirs[@]}"
         
         ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
