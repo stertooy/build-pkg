@@ -15,7 +15,7 @@ All of the following inputs are optional.
 - `coverage`:
   - Boolean that determines whether code coverage is turned on by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.
   - default: `'true'`
-- `CONFIGFLAGS`:
+- `configflags`:
   - Additional arguments to be passed to configure.
   - default: `''`
 - `build-needed-pkgs`:
