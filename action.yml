@@ -26,7 +26,7 @@ inputs:
     required: false
     default: 'true'
   extra-pkgs:
-    description: 'Extra packages to build. Should be a space-separated list.'
+    description: 'Extra packages to build. Should be a space- or newline-separated list.'
     required: false
     default: ''
   
@@ -188,6 +188,6 @@ runs:
       run: |
         # Cannot use 'working-directory' on Cygwin, so we use cd instead
         cd $GAPROOT/pkg
-        EXTRA_PKGS_TO_BUILD="${{ inputs.extra-pkgs }}"
+        EXTRA_PKGS_TO_BUILD=$(echo "${{ inputs.extra-pkgs }}" | tr '\n' ' ')
         PKGS_TO_BUILD=$(printf '%s\n' $GAP_PKGS_TO_BUILD $EXTRA_PKGS_TO_BUILD | sort -u | xargs)
         ../bin/BuildPackages.sh --strict $PKGS_TO_BUILD
