@@ -158,7 +158,7 @@ runs:
             )) then
               for pkg in info.Dependencies.TestPackages do
                 name := LowercaseString( pkg[1] );
-                Print( "  -  is tested using package '", name, "'\n" );
+                Print( "  - is tested using package '", name, "'\n" );
                 if not name in done then
                   AddSet( todo, name );
                 fi;
