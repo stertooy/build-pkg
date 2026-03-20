@@ -130,9 +130,9 @@ runs:
               # TODO: improve this
               need := info.Dependencies.NeededSystemPackages;
               if "${{ runner.os }}" = "Linux" and IsBound( need.Ubuntu ) then
-                UniteSet( pkgs, need.Ubuntu );
+                UniteSet( pkgs, List( need.Ubuntu, First ) );
               elif "${{ runner.os }}" = "macOS" and IsBound( need.Homebrew ) then
-                UniteSet( pkgs, need.Homebrew );
+                UniteSet( pkgs, List( need.Homebrew, First ) );
               fi;
             fi;
 
