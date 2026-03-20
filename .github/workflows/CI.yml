@@ -38,3 +38,31 @@ jobs:
       - uses: ./this-action/
         with:
           build-suggested-pkgs: 'recursive'
+
+  test-ext:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        gap-version:
+          - devel
+          - v4.13
+          - v4.9
+
+    steps:
+      # the order of the checkout actions is important because all contents of
+      # the target folder of the checkout action is removed
+      - uses: actions/checkout@v6
+        with:
+          # TODO: use a real package with a non-empty TestPackages record
+          repository: stertooy/alnuth
+      - uses: actions/checkout@v6
+        with:
+          path: this-action/
+      - uses: gap-actions/setup-gap@v3
+        with:
+          gap-version: ${{ matrix.gap-version }}
+      - uses: ./this-action/
+        with:
+          build-extensions: false
