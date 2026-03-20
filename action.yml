@@ -21,9 +21,6 @@ inputs:
     description: 'Build packages needed for extensions by this package. Options are: true, false, recursive.'
     required: false
     default: 'true'
-  
-env:
-  CHERE_INVOKING: 1
 
 runs:
   using: "composite"
