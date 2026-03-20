@@ -69,7 +69,7 @@ runs:
 
           todo := [ orig ];;
           done := [];;
-          depth := 1;
+          depth := 1;;
           pkgs := [];;
 
           while not IsEmpty( todo ) do
@@ -130,9 +130,9 @@ runs:
               # TODO: improve this
               need := info.Dependencies.NeededSystemPackages;
               if "${{ runner.os }}" = "Linux" and IsBound( need.Ubuntu ) then
-                UniteSet( pkgs, List( need.Ubuntu, First ) );
+                UniteSet( pkgs, List( need.Ubuntu, x -> x[1] ) );
               elif "${{ runner.os }}" = "macOS" and IsBound( need.Homebrew ) then
-                UniteSet( pkgs, List( need.Homebrew, First ) );
+                UniteSet( pkgs, List( need.Homebrew, x -> x[1] ) );
               fi;
             fi;
 
