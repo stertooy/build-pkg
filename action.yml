@@ -127,7 +127,6 @@ runs:
               "${{ inputs.build-system-pkgs }}" = "recursive" or
               ( "${{ inputs.build-system-pkgs }}" = "true" and depth = 1 )
             )) then
-              # TODO: improve this
               need := info.Dependencies.NeededSystemPackages;
               if "${{ runner.os }}" = "Linux" and IsBound( need.Ubuntu ) then
                 UniteSet( pkgs, List( need.Ubuntu, x -> x[1] ) );
