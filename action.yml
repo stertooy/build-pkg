@@ -164,20 +164,18 @@ runs:
         cd ${GAPROOT}/pkg
 
         # Fix for older GAP versions
+        # E.g. "gapdoc" might actually be located in "GAPDoc-1.2.3"
         pkgdirs=()
-        for pkgdir in $GAP_PKGS_TO_BUILD; do
-            # Find directory up to capitalisation
-            while IFS= read -r d; do
-                pkgdirs+=("${d#./}")
-            done < <(find . -maxdepth 1 -type d -iname "$pkgdir")
+        for pkgdir in ${GAP_PKGS_TO_BUILD}; do
+          # Find directory up to capitalisation
+          while IFS= read -r d; do
+            pkgdirs+=("${d#./}")
+          done < <(find . -maxdepth 1 -type d -iname "${pkgdir}")
         
-            # Find directory with version number up to capitalisation
-            while IFS= read -r d; do
-                pkgdirs+=("${d#./}")
-            done < <(find . -maxdepth 1 -type d -iname "${pkgdir}-*")
+          # Find directory with version number up to capitalisation
+          while IFS= read -r d; do
+            pkgdirs+=("${d#./}")
+          done < <(find . -maxdepth 1 -type d -iname "${pkgdir}-*")
         done
-        
-        echo "Installing packages in ${pkgdirs[@]}"
-        ls -a ./
         
         ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
