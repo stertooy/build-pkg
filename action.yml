@@ -162,7 +162,7 @@ runs:
       run: |
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           sudo apt-get install --no-install-recommends "${SYS_PKGS_TO_BUILD}"
-        elif [[ "${RUNNER_OS}" = "Ubuntu" ]] && command -v brew; then
+        elif [[ "${{ runner.os }}" = "macOS" ]]; then
           brew install "${SYS_PKGS_TO_BUILD}"
         fi
 
