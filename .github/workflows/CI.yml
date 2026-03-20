@@ -9,7 +9,6 @@ on:
 
 jobs:
   test:
-    name: "Test on ${{ matrix.os }}, GAP version ${{ matrix.gap-version }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -41,7 +40,6 @@ jobs:
           build-suggested-pkgs: 'recursive'
 
   test-ext:
-    name: "Test external deps on ${{ matrix.os }}, GAP version ${{ matrix.gap-version }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
