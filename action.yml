@@ -5,7 +5,7 @@ inputs:
     description: 'Boolean that determines whether code coverage is turned by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.'
     required: false
     default: 'true'
-  CONFIGFLAGS:
+  configflags:
     description: 'additional arguments to be passed to configure'
     required: false
     default: ''
@@ -76,7 +76,7 @@ runs:
           ./autogen.sh
         fi
         if [[ -x configure ]]; then
-          ./configure --with-gaproot=$GAPROOT ${{ inputs.CONFIGFLAGS }}
+          ./configure --with-gaproot=$GAPROOT ${{ inputs.configflags }}
           make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
         fi
 
