@@ -23,6 +23,11 @@ jobs:
           - v4.11
           - v4.10
           - v4.9
+        exclude:
+          - os: macos-latest
+            gap-version: v4.9
+          - os: macos-latest
+            gap-version: v4.10
 
     steps:
       # the order of the checkout actions is important because all contents of
@@ -41,7 +46,7 @@ jobs:
       - uses: ./this-action/
         with:
           build-suggested-pkgs: 'recursive'
-          extra-pkgs: 'profiling'
+          extra-pkgs: 'json profiling'
 
   test-testpkgs:
     runs-on: ubuntu-latest
