@@ -41,7 +41,7 @@ jobs:
       - uses: ./this-action/
         with:
           build-suggested-pkgs: 'recursive'
-          extra-pkgs: 'profiling'
+          extra-pkgs: 'nq'
 
   test-testpkgs:
     runs-on: ubuntu-latest
