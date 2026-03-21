@@ -25,9 +25,9 @@ jobs:
           - v4.9
         exclude:
           - os: macos-latest
-            gap-version:
-              - v4.9
-              - v4.10
+            gap-version: v4.9
+          - os: macos-latest
+            gap-version: v4.10
 
     steps:
       # the order of the checkout actions is important because all contents of
