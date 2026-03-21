@@ -22,6 +22,7 @@ jobs:
           - v4.12
           - v4.11
           - v4.10
+          - v4.9
 
     steps:
       # the order of the checkout actions is important because all contents of
@@ -35,6 +36,8 @@ jobs:
         with:
           path: this-action/
       - uses: gap-actions/setup-gap@v3
+        with:
+          gap-version: ${{ matrix.gap-version }}
       - uses: ./this-action/
         with:
           build-suggested-pkgs: 'recursive'

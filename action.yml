@@ -5,7 +5,7 @@ inputs:
     description: 'Boolean that determines whether code coverage is turned by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.'
     required: false
     default: 'true'
-  CONFIGFLAGS:
+  configflags:
     description: 'additional arguments to be passed to configure'
     required: false
     default: ''
@@ -29,9 +29,6 @@ inputs:
     description: 'Extra packages to build. Should be a space- or newline-separated list.'
     required: false
     default: ''
-  
-env:
-  CHERE_INVOKING: 1
 
 runs:
   using: "composite"
@@ -85,7 +82,7 @@ runs:
           ./autogen.sh
         fi
         if [[ -x configure ]]; then
-          ./configure --with-gaproot=$GAPROOT ${{ inputs.CONFIGFLAGS }}
+          ./configure --with-gaproot=$GAPROOT ${{ inputs.configflags }}
           make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
         fi
 
@@ -190,4 +187,20 @@ runs:
         cd $GAPROOT/pkg
         EXTRA_PKGS_TO_BUILD=$(echo "${{ inputs.extra-pkgs }}" | tr '\n' ' ')
         PKGS_TO_BUILD=$(printf '%s\n' $GAP_PKGS_TO_BUILD $EXTRA_PKGS_TO_BUILD | sort -u | xargs)
-        ../bin/BuildPackages.sh --strict $PKGS_TO_BUILD
+
+        # Fix for older GAP versions
+        # E.g. "gapdoc" might actually be located in "GAPDoc-1.2.3"
+        pkgdirs=()
+        for pkgdir in ${PKGS_TO_BUILD}; do
+          # Find directory up to capitalisation
+          while IFS= read -r d; do
+            pkgdirs+=("${d#./}")
+          done < <(find . -maxdepth 1 -type d -iname "${pkgdir}")
+        
+          # Find directory with version number up to capitalisation
+          while IFS= read -r d; do
+            pkgdirs+=("${d#./}")
+          done < <(find . -maxdepth 1 -type d -iname "${pkgdir}-*")
+        done
+        
+        ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
