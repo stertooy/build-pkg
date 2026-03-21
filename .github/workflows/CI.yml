@@ -41,7 +41,7 @@ jobs:
       - uses: ./this-action/
         with:
           build-suggested-pkgs: 'recursive'
-          extra-pkgs: 'json profiling'
+          extra-pkgs: 'profiling'
 
   test-testpkgs:
     runs-on: ubuntu-latest
