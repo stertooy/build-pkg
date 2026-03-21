@@ -27,14 +27,18 @@ All of the following inputs are optional.
 - `build-extensions`:
   - Build packages needed for extensions by this package. Options are: true, false, recursive.
   - default: `'true'`
- 
+- `build-system-pkgs`:
+  - Build system packages needed by this package. Options are: true, false, recursive.
+  - default: `'recursive'`
+
 ### What's new in v3
 
 - Dropped support for GAP packages that have a `configure` script which does not
   support the `--with-gaproot=PATH` argument.
-- The inputs `build-needed-pkgs`, `build-suggested-pkgs` and `build-extensions` were
-  added. Setting these to `true` will also compile the relevant dependencies, and setting
-  them to `recursive` will also compile the dependencies' dependencies, etc.
+- The inputs `build-needed-pkgs`, `build-suggested-pkgs`, `build-extensions` and
+  `build-system-pkgs` were added. Setting these to `true` will also compile the
+  relevant dependencies, and setting them to `recursive` will also compile the
+  dependencies' dependencies, etc.
 - The `ABI` input was dropped. It previously made it easy to build 32-bit versions of
   packages, but we are phasing that out, so workflows should stop passing this input.
 
