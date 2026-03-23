@@ -135,7 +135,7 @@ runs:
             "build_pkg_ext",
             function( info, mode, aset )
               local ext, pkg;
-              if build_pkg_chk( info, Extensions, mode ) then
+              if build_pkg_chk( info, "Extensions", mode ) then
                 for ext in info.Extensions do
                   for pkg in ext.needed do
                     build_pkg_add( pkg,"has an extension that needs package", todo );
