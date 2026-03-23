@@ -165,7 +165,7 @@ runs:
               info,
               "SuggestedOtherPackages",
               "${{ inputs.build-suggested-pkgs }}",
-              "suggests package"
+              "suggests package",
               todo
             );
             
@@ -174,7 +174,7 @@ runs:
               info,
               "TestPackages",
               "${{ inputs.build-test-pkgs }}",
-              "is tested using package"
+              "is tested using package",
               todo
             );
             
