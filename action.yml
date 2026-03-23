@@ -103,7 +103,7 @@ runs:
             function( field, mode )
               return IsBound( field ) and (
                 mode = "recursive" or ( mode = "true" and depth = 1 )
-              )
+              );
             end
           );
 
@@ -122,6 +122,7 @@ runs:
           BindGlobal(
             "build_pkg_dep",
             function( info, field, mode, desc, aset )
+              local pkg;
               if build_pkg_chk( info.Dependencies.(field), mode ) then
                 for pkg in info.Dependencies.(field) do
                   build_pkg_add( pkg, desc, aset );
@@ -133,6 +134,7 @@ runs:
           BindGlobal(
             "build_pkg_ext",
             function( info, mode, aset )
+              local ext, pkg;
               if build_pkg_chk( info.Extensions, mode ) then
                 for ext in info.Extensions do
                   for pkg in ext.needed do
