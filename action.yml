@@ -99,7 +99,7 @@ runs:
           depth := 1;;
 
           BindGlobal(
-            "build_pkg_chk",
+            "build_pkg_check",
             function( info, field, mode )
               return IsBound( info.(field) ) and (
                 mode = "recursive" or ( mode = "true" and depth = 1 )
@@ -108,7 +108,7 @@ runs:
           );
 
           BindGlobal(
-            "build_pkg_add",
+            "build_pkg_add_todo",
             function( pkg, desc, aset )
               local name;
               name := LowercaseString( pkg[1] );
@@ -120,25 +120,25 @@ runs:
           );
 
           BindGlobal(
-            "build_pkg_dep",
+            "build_pkg_gather_deps",
             function( info, field, mode, desc, aset )
               local pkg;
-              if build_pkg_chk( info.Dependencies, field, mode ) then
+              if build_pkg_check( info.Dependencies, field, mode ) then
                 for pkg in info.Dependencies.(field) do
-                  build_pkg_add( pkg, desc, aset );
+                  build_pkg_add_todo( pkg, desc, aset );
                 od;
               fi;
             end
           );
 
           BindGlobal(
-            "build_pkg_ext",
+            "build_pkg_gather_exts,
             function( info, mode, aset )
               local ext, pkg;
-              if build_pkg_chk( info, "Extensions", mode ) then
+              if build_pkg_check( info, "Extensions", mode ) then
                 for ext in info.Extensions do
                   for pkg in ext.needed do
-                    build_pkg_add( pkg,"has an extension that needs package", todo );
+                    build_pkg_add_todo( pkg,"has an extension that needs package", todo );
                   od;
                 od;
               fi;
@@ -152,7 +152,7 @@ runs:
             info := GAPInfo.PackagesInfo.(curr)[1];
 
             # Needed packages
-            build_pkg_dep(
+            build_pkg_gather_deps(
               info,
               "NeededOtherPackages",
               "${{ inputs.build-needed-pkgs }}",
@@ -161,7 +161,7 @@ runs:
             );
 
             # Suggested packages
-            build_pkg_dep(
+            build_pkg_gather_deps(
               info,
               "SuggestedOtherPackages",
               "${{ inputs.build-suggested-pkgs }}",
@@ -170,7 +170,7 @@ runs:
             );
             
             # Test packages
-            build_pkg_dep(
+            build_pkg_gather_deps(
               info,
               "TestPackages",
               "${{ inputs.build-test-pkgs }}",
@@ -179,7 +179,7 @@ runs:
             );
             
             # Package extensions
-            build_pkg_ext(
+            build_pkg_gather_exts(
               info,
               "${{ inputs.build-extensions }}",
               todo
