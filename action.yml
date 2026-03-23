@@ -132,7 +132,7 @@ runs:
           );
 
           BindGlobal(
-            "build_pkg_gather_exts,
+            "build_pkg_gather_exts",
             function( info, mode, aset )
               local ext, pkg;
               if build_pkg_check( info, "Extensions", mode ) then
