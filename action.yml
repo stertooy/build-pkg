@@ -96,27 +96,33 @@ runs:
 
           todo := [ orig ];;
           done := [];;
-          depth := 1;
-          
-          AddDeps := function( field, mode, desc )
-            if ( IsBound( info.Dependencies.(field) ) and ( 
-              mode = "recursive" or ( mode = "true" and depth = 1 )
-            )) then
-              for pkg in info.Dependencies.(field) do
-                name := LowercaseString( pkg[1] );
-                Print( "  - ", desc, " '", name, "'\n" );
-                if not name in done then
-                  AddSet( todo, name );
-                fi;
-              od;
-            fi;
-          end;
+          depth := 1;;
 
           while not IsEmpty( todo ) do
             curr := Remove( todo );
             Print( "Now handling package '", curr, "' (depth ",depth,")\n");
             AddSet( done, curr );
             info := GAPInfo.PackagesInfo.(curr)[1];
+
+            AddToTodo := function( pkg, desc )
+              local name;
+              name := LowercaseString( pkg[1] );
+              Print( "  - ", desc, " '", name, "'\n" );
+              if not name in done then
+                AddSet( todo, name );
+              fi;
+            end;
+                  
+            AddDeps := function( field, mode, desc )
+              local pkg;
+              if ( IsBound( info.Dependencies.(field) ) and (
+                mode = "recursive" or ( mode = "true" and depth = 1 )
+              )) then
+                for pkg in info.Dependencies.(field) do
+                  AddToTodo( pkg, desc );
+                od;
+              fi;
+            end;
 
             # Needed packages
             AddDeps(
@@ -146,11 +152,7 @@ runs:
             )) then
               for ext in info.Extensions do
                 for pkg in ext.needed do
-                  name := LowercaseString( pkg[1] );
-                  Print( "  - needs package '", name, "' for an extension\n" );
-                  if not name in done then
-                    AddSet( todo, name );
-                  fi;
+                  AddToTodo( pkg, "has an extension that needs package" );
                 od;
               od;
             fi;
