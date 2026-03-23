@@ -97,6 +97,20 @@ runs:
           todo := [ orig ];;
           done := [];;
           depth := 1;
+          
+          AddDeps := function( field, mode, desc )
+            if ( IsBound( info.Dependencies.(field) ) and ( 
+              mode = "recursive" or ( mode = "true" and depth = 1 )
+            )) then
+              for pkg in info.Dependencies.(field) do
+                name := LowercaseString( pkg[1] );
+                Print( "  - ", desc, " '", name, "'\n" );
+                if not name in done then
+                  AddSet( todo, name );
+                fi;
+              od;
+            fi;
+          end;
 
           while not IsEmpty( todo ) do
             curr := Remove( todo );
@@ -105,33 +119,26 @@ runs:
             info := GAPInfo.PackagesInfo.(curr)[1];
 
             # Needed packages
-            if ( IsBound( info.Dependencies.NeededOtherPackages ) and ( 
-              "${{ inputs.build-needed-pkgs }}" = "recursive" or
-              ( "${{ inputs.build-needed-pkgs }}" = "true" and depth = 1 )
-            )) then
-              for pkg in info.Dependencies.NeededOtherPackages do
-                name := LowercaseString( pkg[1] );
-                Print( "  - needs package '", name, "'\n" );
-                if not name in done then
-                  AddSet( todo, name );
-                fi;
-              od;
-            fi;
+            AddDeps(
+              "NeededOtherPackages",
+              "${{ inputs.build-needed-pkgs }}",
+              "needs package"
+            );
 
             # Suggested packages
-            if ( IsBound( info.Dependencies.SuggestedOtherPackages ) and ( 
-              "${{ inputs.build-suggested-pkgs }}" = "recursive" or
-              ( "${{ inputs.build-suggested-pkgs }}" = "true" and depth = 1 )
-            )) then
-              for pkg in info.Dependencies.SuggestedOtherPackages do
-                name := LowercaseString( pkg[1] );
-                Print( "  - suggests package '", name, "'\n" );
-                if not name in done then
-                  AddSet( todo, name );
-                fi;
-              od;
-            fi;
-
+            AddDeps(
+              "SuggestedOtherPackages",
+              "${{ inputs.build-suggested-pkgs }}",
+              "suggests package"
+            );
+            
+            # Test packages
+            AddDeps(
+              "TestPackages",
+              "${{ inputs.build-test-pkgs }}",
+              "is tested using package"
+            );
+            
             # Package extensions
             if ( IsBound( info.Extensions ) and ( 
               "${{ inputs.build-extensions }}" = "recursive" or
@@ -145,20 +152,6 @@ runs:
                     AddSet( todo, name );
                   fi;
                 od;
-              od;
-            fi;
-
-            # Test packages
-            if ( IsBound( info.Dependencies.TestPackages ) and ( 
-              "${{ inputs.build-test-pkgs }}" = "recursive" or
-              ( "${{ inputs.build-test-pkgs }}" = "true" and depth = 1 )
-            )) then
-              for pkg in info.Dependencies.TestPackages do
-                name := LowercaseString( pkg[1] );
-                Print( "  - is tested using package '", name, "'\n" );
-                if not name in done then
-                  AddSet( todo, name );
-                fi;
               od;
             fi;
 
