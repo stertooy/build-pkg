@@ -98,64 +98,90 @@ runs:
           done := [];;
           depth := 1;;
 
+          BindGlobal(
+            "build_pkg_chk",
+            function( field, mode )
+              return IsBound( field ) and (
+                mode = "recursive" or ( mode = "true" and depth = 1 )
+              )
+            end
+          );
+
+          BindGlobal(
+            "build_pkg_add",
+            function( pkg, desc, aset )
+              local name;
+              name := LowercaseString( pkg[1] );
+              Print( "  - ", desc, " '", name, "'\n" );
+              if not name in done then
+                AddSet( aset, name );
+              fi;
+            end
+          );
+
+          BindGlobal(
+            "build_pkg_dep",
+            function( info, field, mode, desc, aset )
+              if build-pkg_chk( info.Dependencies.(field), mode ) then
+                for pkg in info.Dependencies.(field) do
+                  build_pkg_add( pkg, desc, aset );
+                od;
+              fi;
+            end
+          );
+
+          BindGlobal(
+            "build_pkg_ext",
+            function( info, mode, aset )
+              if build-pkg_chk( info.Extensions, mode ) then
+                for ext in info.Extensions do
+                  for pkg in ext.needed do
+                    build_pkg_add( pkg,"has an extension that needs package", todo );
+                  od;
+                od;
+              fi;
+            end
+          );
+
           while not IsEmpty( todo ) do
             curr := Remove( todo );
             Print( "Now handling package '", curr, "' (depth ",depth,")\n");
             AddSet( done, curr );
             info := GAPInfo.PackagesInfo.(curr)[1];
 
-            AddToTodo := function( pkg, desc )
-              local name;
-              name := LowercaseString( pkg[1] );
-              Print( "  - ", desc, " '", name, "'\n" );
-              if not name in done then
-                AddSet( todo, name );
-              fi;
-            end;
-                  
-            AddDeps := function( info, field, mode, desc )
-              local pkg;
-              if ( IsBound( info.Dependencies.(field) ) and (
-                mode = "recursive" or ( mode = "true" and depth = 1 )
-              )) then
-                for pkg in info.Dependencies.(field) do
-                  AddToTodo( pkg, desc );
-                od;
-              fi;
-            end;
-
             # Needed packages
-            AddDeps(
+            build_pkg_dep(
+              info,
               "NeededOtherPackages",
               "${{ inputs.build-needed-pkgs }}",
-              "needs package"
+              "needs package",
+              todo
             );
 
             # Suggested packages
-            AddDeps(
+            build_pkg_dep(
+              info,
               "SuggestedOtherPackages",
               "${{ inputs.build-suggested-pkgs }}",
               "suggests package"
+              todo
             );
             
             # Test packages
-            AddDeps(
+            build_pkg_dep(
+              info,
               "TestPackages",
               "${{ inputs.build-test-pkgs }}",
               "is tested using package"
+              todo
             );
             
             # Package extensions
-            if ( IsBound( info.Extensions ) and ( 
-              "${{ inputs.build-extensions }}" = "recursive" or
-              ( "${{ inputs.build-extensions }}" = "true" and depth = 1 )
-            )) then
-              for ext in info.Extensions do
-                for pkg in ext.needed do
-                  AddToTodo( pkg, "has an extension that needs package" );
-                od;
-              od;
-            fi;
+            build_pkg_ext(
+              info,
+              "${{ inputs.build-test-pkgs }}",
+              todo
+            );
 
             depth := depth + 1;;
           od;
