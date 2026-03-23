@@ -113,7 +113,7 @@ runs:
               fi;
             end;
                   
-            AddDeps := function( field, mode, desc )
+            AddDeps := function( info, field, mode, desc )
               local pkg;
               if ( IsBound( info.Dependencies.(field) ) and (
                 mode = "recursive" or ( mode = "true" and depth = 1 )
