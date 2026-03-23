@@ -181,7 +181,7 @@ runs:
             # Package extensions
             build_pkg_ext(
               info,
-              "${{ inputs.build-test-pkgs }}",
+              "${{ inputs.build-extensions }}",
               todo
             );
 
