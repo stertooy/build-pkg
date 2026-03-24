@@ -100,13 +100,14 @@ runs:
           orig := LowercaseString( GAPInfo.PackageInfoCurrent.PackageName );;
 
           todo := [ orig ];;
+          curr := orig;;
           done := [];;
           depth := 1;;
           pkgs := [];;
 
           build_pkg_check := function( info, field, mode )
             return IsBound( info.(field) ) and (
-              mode = "recursive" or ( mode = "true" and depth = 1 )
+              mode = "recursive" or ( mode = "true" and curr = orig )
             );
           end;;
 
@@ -130,7 +131,7 @@ runs:
 
           while not IsEmpty( todo ) do
             curr := Remove( todo );
-            Print( "Now handling package '", curr, "' (depth ",depth,")\n");
+            Print( "Now handling package '", curr, "'\n");
             AddSet( done, curr );
             info := GAPInfo.PackagesInfo.(curr)[1];
 
@@ -182,7 +183,6 @@ runs:
               od;
             fi;
 
-            depth := depth + 1;;
           od;
 
           # We already built the package being tested!
