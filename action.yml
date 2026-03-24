@@ -2,15 +2,15 @@ name: 'Compile GAP package'
 description: 'Compile the given GAP package being tested'
 inputs:
   coverage:
-    description: 'Boolean that determines whether code coverage is turned by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.'
+    description: 'Boolean that determines whether code coverage is turned on by adding `--coverage` to `CFLAGS`, `CXXFLAGS` and `LDFLAGS`.'
     required: false
     default: 'true'
   configflags:
-    description: 'additional arguments to be passed to configure'
+    description: 'Additional arguments to be passed to configure.'
     required: false
     default: ''
   build-needed-pkgs:
-    description: 'Build packages needed by this package. Options are: true, false, recursive.'
+    description: 'Build packages needed by this package, appearing in the `Dependencies.NeededPackages` record in `PackageInfo.g`. Options are: true, false, recursive.'
     required: false
     default: 'recursive'
   build-suggested-pkgs:
@@ -30,7 +30,7 @@ inputs:
     required: false
     default: 'true'
   extra-pkgs:
-    description: 'Extra packages to build. Should be a space- or newline-separated list.'
+    description: 'Additional packages to build that do not appear in `PackageInfo.g`. Should be a space- or newline-separated list.'
     required: false
     default: ''
 
