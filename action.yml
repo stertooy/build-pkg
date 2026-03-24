@@ -140,18 +140,20 @@ runs:
           BindGlobal(
             "build_pkg_gather_syspkg",
             function( info, mode, aset )
-              local need;
+              local pkg;
               if build_pkg_check( info.Dependencies, "NeededSystemPackages", mode ) then
-                if "${{ runner.os }}" = "Linux" and IsBound( need.Ubuntu ) then
+                if "${{ runner.os }}" = "Linux" then
                   field := "Ubuntu";
-                elif "${{ runner.os }}" = "macOS" and IsBound( need.Homebrew ) then
+                elif "${{ runner.os }}" = "macOS" then
                   field := "Homebrew";
                 else
                   return;
                 fi;
-                for pkg in info.Dependencies.NeededSystemPackages.(field) do
-                  build_pkg_add_todo( pkg, "needs system package", aset, [] );
-                od;
+                if IsBound( info.Dependencies.NeededSystemPackages.(field) ) then
+                  for pkg in info.Dependencies.NeededSystemPackages.(field) do
+                    build_pkg_add_todo( pkg, "needs system package", aset, [] );
+                  od;
+                fi;
               fi;
             end
           );
