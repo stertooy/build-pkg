@@ -127,46 +127,11 @@ runs:
 
           BindGlobal(
             "build_pkg_gather_deps",
-            function( info, field, mode, desc, aset, aset2 )
+            function( info, field, mode, desc )
               local pkg;
               if build_pkg_check( info.Dependencies, field, mode ) then
                 for pkg in info.Dependencies.(field) do
-                  build_pkg_add_todo( pkg, desc, aset, aset2 );
-                od;
-              fi;
-            end
-          );
-          
-          BindGlobal(
-            "build_pkg_gather_syspkgs",
-            function( info, mode, aset )
-              local field, pkg;
-              if build_pkg_check( info.Dependencies, "NeededSystemPackages", mode ) then
-                if "${{ runner.os }}" = "Linux" then
-                  field := "Ubuntu";
-                elif "${{ runner.os }}" = "macOS" then
-                  field := "Homebrew";
-                else
-                  return;
-                fi;
-                if IsBound( info.Dependencies.NeededSystemPackages.(field) ) then
-                  for pkg in info.Dependencies.NeededSystemPackages.(field) do
-                    build_pkg_add_todo( pkg, "needs system package", aset, [] );
-                  od;
-                fi;
-              fi;
-            end
-          );
-
-          BindGlobal(
-            "build_pkg_gather_exts",
-            function( info, mode, aset, aset2 )
-              local ext, pkg;
-              if build_pkg_check( info, "Extensions", mode ) then
-                for ext in info.Extensions do
-                  for pkg in ext.needed do
-                    build_pkg_add_todo( pkg,"has an extension that needs package", todo, done );
-                  od;
+                  build_pkg_add_todo( pkg, desc, todo, done );
                 od;
               fi;
             end
@@ -183,8 +148,7 @@ runs:
               info,
               "NeededOtherPackages",
               "${{ inputs.build-needed-pkgs }}",
-              "needs package",
-              todo, done
+              "needs package"
             );
 
             # Suggested packages
@@ -192,8 +156,7 @@ runs:
               info,
               "SuggestedOtherPackages",
               "${{ inputs.build-suggested-pkgs }}",
-              "suggests package",
-              todo, done
+              "suggests package"
             );
             
             # Test packages
@@ -201,23 +164,32 @@ runs:
               info,
               "TestPackages",
               "${{ inputs.build-test-pkgs }}",
-              "is tested using package",
-              todo, done
+              "is tested using package"
             );
             
             # System packages
-            build_pkg_gather_syspkgs(
-              info,
-              "${{ inputs.build-system-pkgs }}",
-              pkgs
-            );
+            if build_pkg_check( info.Dependencies, "NeededSystemPackages", "${{ inputs.build-system-pkgs }}" ) then
+              field := "DOES_NOT_EXIST";
+              if "${{ runner.os }}" = "Linux" then
+                field := "Ubuntu";
+              elif "${{ runner.os }}" = "macOS" then
+                field := "Homebrew";
+              fi;
+              if IsBound( info.Dependencies.NeededSystemPackages.(field) ) then
+                for pkg in info.Dependencies.NeededSystemPackages.(field) do
+                  build_pkg_add_todo( pkg, "needs system package", pkgs, [] );
+                od;
+              fi;
+            fi;
             
             # Package extensions
-            build_pkg_gather_exts(
-              info,
-              "${{ inputs.build-extensions }}",
-              todo, done
-            );
+            if build_pkg_check( info, "Extensions", "${{ inputs.build-extensions }}" ) then
+              for ext in info.Extensions do
+                for pkg in ext.needed do
+                  build_pkg_add_todo( pkg,"has an extension that needs package", todo, done );
+                od;
+              od;
+            fi;
 
             depth := depth + 1;;
           od;
