@@ -2,6 +2,10 @@
 
 This GitHub action builds a GAP package.
 
+## Supported OSes
+
+This action can be run on macOS, Ubuntu and Windows (when preceded by the `setup-cygwin` action). The building of *system packages* is only supported on macOS and Ubuntu.
+
 ## Usage
 
 The action `build-pkg` has to be called by the workflow of a GAP
