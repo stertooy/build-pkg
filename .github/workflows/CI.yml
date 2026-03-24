@@ -23,6 +23,11 @@ jobs:
           - v4.11
           - v4.10
           - v4.9
+        exclude:
+          - os: macos-latest
+            gap-version: v4.9
+          - os: macos-latest
+            gap-version: v4.10
 
     steps:
       # the order of the checkout actions is important because all contents of
@@ -41,6 +46,8 @@ jobs:
       - uses: ./this-action/
         with:
           build-suggested-pkgs: 'recursive'
+          extra-pkgs: 'json profiling'
+
 
   test-ext:
     runs-on: ${{ matrix.os }}
@@ -58,7 +65,7 @@ jobs:
       # the target folder of the checkout action is removed
       - uses: actions/checkout@v6
         with:
-          # TODO: use a real package with a non-empty TestPackages record
+          # TODO: use a "real" package with a non-empty TestPackages and NeededSystemPackages record
           repository: stertooy/alnuth
       - uses: actions/checkout@v6
         with:

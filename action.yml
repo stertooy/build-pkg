@@ -14,7 +14,7 @@ inputs:
     required: false
     default: 'recursive'
   build-suggested-pkgs:
-    description: 'Build packages suggsted by this package. Options are: true, false, recursive.'
+    description: 'Build packages suggested by this package. Options are: true, false, recursive.'
     required: false
     default: 'true'
   build-extensions:
@@ -25,6 +25,14 @@ inputs:
     description: 'Build system packages needed by this package. Options are: true, false, recursive.'
     required: false
     default: 'recursive'
+  build-test-pkgs:
+    description: 'Build packages needed for CI testing. Options are: true, false, recursive.'
+    required: false
+    default: 'true'
+  extra-pkgs:
+    description: 'Extra packages to build. Should be a space- or newline-separated list.'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -55,6 +63,33 @@ runs:
         validate_opts "${{ inputs.build-suggested-pkgs }}" build-suggested-pkgs
         validate_opts "${{ inputs.build-extensions }}" build-extensions
         validate_opts "${{ inputs.build-system-pkgs }}" build-system-pkgs
+        validate_opts "${{ inputs.build-test-pkgs }}" build-test-pkgs
+
+    - name: "Build the package itself"
+      shell: bash
+      run: |
+        set -ex
+
+        GAPROOT=${GAPROOT-$HOME/gap}
+
+        # ensure coverage is turned on
+        if [[ "${{ inputs.coverage }}" = "true" ]]; then
+          export CFLAGS="$CFLAGS --coverage"
+          export CXXFLAGS="$CXXFLAGS --coverage"
+          export LDFLAGS="$LDFLAGS --coverage"
+        fi
+
+        # build this package, if necessary
+        if [[ -x prerequisites.sh ]]; then
+          ./prerequisites.sh $GAPROOT
+        fi
+        if [[ -x autogen.sh ]]; then
+          ./autogen.sh
+        fi
+        if [[ -x configure ]]; then
+          ./configure --with-gaproot=$GAPROOT ${{ inputs.configflags }}
+          make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
+        fi
 
     - name: "Determine the package's dependencies"
       shell: bash
@@ -69,6 +104,72 @@ runs:
           depth := 1;;
           pkgs := [];;
 
+          BindGlobal(
+            "build_pkg_check",
+            function( info, field, mode )
+              return IsBound( info.(field) ) and (
+                mode = "recursive" or ( mode = "true" and depth = 1 )
+              );
+            end
+          );
+
+          BindGlobal(
+            "build_pkg_add_todo",
+            function( pkg, desc, aset, aset2 )
+              local name;
+              name := LowercaseString( pkg[1] );
+              Print( "  - ", desc, " '", name, "'\n" );
+              if not name in aset2 then
+                AddSet( aset, name );
+              fi;
+            end
+          );
+
+          BindGlobal(
+            "build_pkg_gather_deps",
+            function( info, field, mode, desc, aset, aset2 )
+              local pkg;
+              if build_pkg_check( info.Dependencies, field, mode ) then
+                for pkg in info.Dependencies.(field) do
+                  build_pkg_add_todo( pkg, desc, aset, aset2 );
+                od;
+              fi;
+            end
+          );
+          
+          BindGlobal(
+            "build_pkg_gather_syspkg",
+            function( info, mode, aset )
+              local need;
+              if build_pkg_check( info.Dependencies, "NeededSystemPackages", mode ) then
+                if "${{ runner.os }}" = "Linux" and IsBound( need.Ubuntu ) then
+                  field := "Ubuntu";
+                elif "${{ runner.os }}" = "macOS" and IsBound( need.Homebrew ) then
+                  field := "Homebrew";
+                else
+                  return;
+                fi;
+                for pkg in info.Dependencies.NeededSystemPackages.(field) do
+                  build_pkg_add_todo( pkg, "needs system package", aset, [] );
+                od;
+              fi;
+            end
+          );
+
+          BindGlobal(
+            "build_pkg_gather_exts",
+            function( info, mode, aset, aset2 )
+              local ext, pkg;
+              if build_pkg_check( info, "Extensions", mode ) then
+                for ext in info.Extensions do
+                  for pkg in ext.needed do
+                    build_pkg_add_todo( pkg,"has an extension that needs package", todo, done );
+                  od;
+                od;
+              fi;
+            end
+          );
+
           while not IsEmpty( todo ) do
             curr := Remove( todo );
             Print( "Now handling package '", curr, "' (depth ",depth,")\n");
@@ -76,61 +177,45 @@ runs:
             info := GAPInfo.PackagesInfo.(curr)[1];
 
             # Needed packages
-            if ( IsBound( info.Dependencies.NeededOtherPackages ) and ( 
-              "${{ inputs.build-needed-pkgs }}" = "recursive" or
-              ( "${{ inputs.build-needed-pkgs }}" = "true" and depth = 1 )
-            )) then
-              for pkg in info.Dependencies.NeededOtherPackages do
-                name := LowercaseString( pkg[1] );
-                Print( "  - needs package '", name, "'\n" );
-                if not name in done then
-                  AddSet( todo, name );
-                fi;
-              od;
-            fi;
+            build_pkg_gather_deps(
+              info,
+              "NeededOtherPackages",
+              "${{ inputs.build-needed-pkgs }}",
+              "needs package",
+              todo, done
+            );
 
             # Suggested packages
-            if ( IsBound( info.Dependencies.SuggestedOtherPackages ) and ( 
-              "${{ inputs.build-suggested-pkgs }}" = "recursive" or
-              ( "${{ inputs.build-suggested-pkgs }}" = "true" and depth = 1 )
-            )) then
-              for pkg in info.Dependencies.SuggestedOtherPackages do
-                name := LowercaseString( pkg[1] );
-                Print( "  - suggests package '", name, "'\n" );
-                if not name in done then
-                  AddSet( todo, name );
-                fi;
-              od;
-            fi;
-
-            # Package extensions
-            if ( IsBound( info.Extensions ) and ( 
-              "${{ inputs.build-extensions }}" = "recursive" or
-              ( "${{ inputs.build-extensions }}" = "true" and depth = 1 )
-            )) then
-              for ext in info.Extensions do
-                for pkg in ext.needed do
-                  name := LowercaseString( pkg[1] );
-                  Print( "  - needs package '", name, "' for an extension\n" );
-                  if not name in done then
-                    AddSet( todo, name );
-                  fi;
-                od;
-              od;
-            fi;
-
+            build_pkg_gather_deps(
+              info,
+              "SuggestedOtherPackages",
+              "${{ inputs.build-suggested-pkgs }}",
+              "suggests package",
+              todo, done
+            );
+            
+            # Test packages
+            build_pkg_gather_deps(
+              info,
+              "TestPackages",
+              "${{ inputs.build-test-pkgs }}",
+              "is tested using package",
+              todo, done
+            );
+            
             # System packages
-            if ( IsBound( info.Dependencies.NeededSystemPackages ) and ( 
-              "${{ inputs.build-system-pkgs }}" = "recursive" or
-              ( "${{ inputs.build-system-pkgs }}" = "true" and depth = 1 )
-            )) then
-              need := info.Dependencies.NeededSystemPackages;
-              if "${{ runner.os }}" = "Linux" and IsBound( need.Ubuntu ) then
-                UniteSet( pkgs, List( need.Ubuntu, x -> x[1] ) );
-              elif "${{ runner.os }}" = "macOS" and IsBound( need.Homebrew ) then
-                UniteSet( pkgs, List( need.Homebrew, x -> x[1] ) );
-              fi;
-            fi;
+            build_pkg_gather_syspkgs(
+              info,
+              "${{ inputs.build-system-pkgs }}",
+              pkgs
+            );
+            
+            # Package extensions
+            build_pkg_gather_exts(
+              info,
+              "${{ inputs.build-extensions }}",
+              todo, done
+            );
 
             depth := depth + 1;;
           od;
@@ -192,12 +277,14 @@ runs:
       shell: bash
       run: |
         # Cannot use 'working-directory' on Cygwin, so we use cd instead
-        cd ${GAPROOT}/pkg
+        cd $GAPROOT/pkg
+        EXTRA_PKGS_TO_BUILD=$(echo "${{ inputs.extra-pkgs }}" | tr '\n' ' ')
+        PKGS_TO_BUILD=$(printf '%s\n' $GAP_PKGS_TO_BUILD $EXTRA_PKGS_TO_BUILD | sort -u | xargs)
 
         # Fix for older GAP versions
         # E.g. "gapdoc" might actually be located in "GAPDoc-1.2.3"
         pkgdirs=()
-        for pkgdir in ${GAP_PKGS_TO_BUILD}; do
+        for pkgdir in ${PKGS_TO_BUILD}; do
           # Find directory up to capitalisation
           while IFS= read -r d; do
             pkgdirs+=("${d#./}")
