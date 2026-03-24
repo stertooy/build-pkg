@@ -2,6 +2,10 @@
 
 This GitHub action builds a GAP package.
 
+## Supported OSes
+
+This action can be run on macOS, Ubuntu and Windows (when preceded by the `setup-cygwin` action). The building of *system packages* is only supported on macOS and Ubuntu.
+
 ## Usage
 
 The action `build-pkg` has to be called by the workflow of a GAP
@@ -19,22 +23,22 @@ All of the following inputs are optional.
   - Additional arguments to be passed to configure.
   - default: `''`
 - `build-needed-pkgs`:
-  - Build packages needed by this package. Options are: true, false, recursive.
+  - Build GAP packages needed by this package, as defined by `Dependencies.NeededPackages` in `PackageInfo.g`. Options are: true, false, recursive.
   - default: `'recursive'`
 - `build-suggested-pkgs`:
-  - Build packages suggested by this package. Options are: true, false, recursive.
+  - Build GAP packages suggested by this package, as defined by `Dependencies.SuggestedOtherPackages` in `PackageInfo.g`. Options are: true, false, recursive.
   - default: `'true'`
 - `build-extensions`:
-  - Build packages needed for extensions by this package. Options are: true, false, recursive.
+  - Build GAP packages needed for extensions by this package, as defined by `Extensions` in `PackageInfo.g`. Options are: true, false, recursive.
   - default: `'true'`
 - `build-system-pkgs`:
-  - Build system packages needed by this package. Options are: true, false, recursive.
+  - Build system packages needed by this package, as defined by `Dependencies.NeededSystemPackages` in `PackageInfo.g`. Options are: true, false, recursive.
   - default: `'recursive'`
 - `build-test-pkgs`:
-  - Build packages needed for CI tests for this package. Options are: true, false, recursive.
+  - Build GAP packages needed for CI testing, as defined by `Dependencies.TestPackages` in `PackageInfo.g`. Options are: true, false, recursive.
   - default: `'true'`
 - `extra-pkgs`:
-  - Extra packages to build. Should be a space- or newline-separated list.
+  - Additional packages to build that do not appear in `PackageInfo.g`. Should be a space- or newline-separated list.
   - default: `''`
     
 ### What's new in v3
@@ -49,6 +53,7 @@ All of the following inputs are optional.
   that do not appear in the `PackageInfo.g` file.
 - The `ABI` input was dropped. It previously made it easy to build 32-bit versions of
   packages, but we are phasing that out, so workflows should stop passing this input.
+- The `CONFIGFLAGS` input was renamed to `configflags`.
 
 ### What's new in v2
 

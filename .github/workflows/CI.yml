@@ -58,6 +58,7 @@ jobs:
         gap-version:
           - devel
           - v4.13
+          - v4.11
 
     steps:
       # the order of the checkout actions is important because all contents of
