@@ -10,23 +10,23 @@ inputs:
     required: false
     default: ''
   build-needed-pkgs:
-    description: 'Build packages needed by this package, appearing in the `Dependencies.NeededPackages` record in `PackageInfo.g`. Options are: true, false, recursive.'
+    description: 'Build GAP packages needed by this package, as defined by `Dependencies.NeededPackages` in `PackageInfo.g`. Options are: true, false, recursive.'
     required: false
     default: 'recursive'
   build-suggested-pkgs:
-    description: 'Build packages suggested by this package. Options are: true, false, recursive.'
+    description: 'Build GAP packages suggested by this package, as defined by `Dependencies.SuggestedOtherPackages` in `PackageInfo.g`. Options are: true, false, recursive.'
     required: false
     default: 'true'
   build-extensions:
-    description: 'Build packages needed for extensions by this package. Options are: true, false, recursive.'
+    description: 'Build GAP packages needed for extensions by this package, as defined by `Extensions` in `PackageInfo.g`. Options are: true, false, recursive.'
     required: false
     default: 'true'
   build-system-pkgs:
-    description: 'Build system packages needed by this package. Options are: true, false, recursive.'
+    description: 'Build system packages needed by this package, as defined by `Dependencies.NeededSystemPackages` in `PackageInfo.g`. Options are: true, false, recursive.'
     required: false
     default: 'recursive'
   build-test-pkgs:
-    description: 'Build packages needed for CI testing. Options are: true, false, recursive.'
+    description: 'Build GAP packages needed for CI testing, as defined by `Dependencies.TestPackages` in `PackageInfo.g`. Options are: true, false, recursive.'
     required: false
     default: 'true'
   extra-pkgs:
