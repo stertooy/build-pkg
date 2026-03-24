@@ -65,32 +65,6 @@ runs:
         validate_opts "${{ inputs.build-system-pkgs }}" build-system-pkgs
         validate_opts "${{ inputs.build-test-pkgs }}" build-test-pkgs
 
-    - name: "Build the package itself"
-      shell: bash
-      run: |
-        set -ex
-
-        GAPROOT=${GAPROOT-$HOME/gap}
-
-        # ensure coverage is turned on
-        if [[ "${{ inputs.coverage }}" = "true" ]]; then
-          export CFLAGS="$CFLAGS --coverage"
-          export CXXFLAGS="$CXXFLAGS --coverage"
-          export LDFLAGS="$LDFLAGS --coverage"
-        fi
-
-        # build this package, if necessary
-        if [[ -x prerequisites.sh ]]; then
-          ./prerequisites.sh $GAPROOT
-        fi
-        if [[ -x autogen.sh ]]; then
-          ./autogen.sh
-        fi
-        if [[ -x configure ]]; then
-          ./configure --with-gaproot=$GAPROOT ${{ inputs.configflags }}
-          make -j4 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS"
-        fi
-
     - name: "Determine the package's dependencies"
       shell: bash
       run: |
@@ -215,8 +189,6 @@ runs:
     - name: "Build the package itself"
       shell: bash
       run: |
-        set -ex
-
         GAPROOT=${GAPROOT-$HOME/gap}
 
         # ensure coverage is turned on
