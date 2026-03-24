@@ -138,7 +138,7 @@ runs:
           );
           
           BindGlobal(
-            "build_pkg_gather_syspkg",
+            "build_pkg_gather_syspkgs",
             function( info, mode, aset )
               local pkg;
               if build_pkg_check( info.Dependencies, "NeededSystemPackages", mode ) then
