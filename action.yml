@@ -140,7 +140,7 @@ runs:
           BindGlobal(
             "build_pkg_gather_syspkgs",
             function( info, mode, aset )
-              local pkg;
+              local field, pkg;
               if build_pkg_check( info.Dependencies, "NeededSystemPackages", mode ) then
                 if "${{ runner.os }}" = "Linux" then
                   field := "Ubuntu";
