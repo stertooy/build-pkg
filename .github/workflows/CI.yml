@@ -48,22 +48,30 @@ jobs:
           build-suggested-pkgs: 'recursive'
           extra-pkgs: 'json profiling'
 
-  test-testpkgs:
-    runs-on: ubuntu-latest
+
+  test-ext:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        gap-version:
+          - devel
+          - v4.13
 
     steps:
       # the order of the checkout actions is important because all contents of
       # the target folder of the checkout action is removed
       - uses: actions/checkout@v6
         with:
-          # TODO: use a real package with a non-empty TestPackages record
+          # TODO: use a "real" package with a non-empty TestPackages and NeededSystemPackages record
           repository: stertooy/alnuth
       - uses: actions/checkout@v6
         with:
           path: this-action/
       - uses: gap-actions/setup-gap@v3
+        with:
+          gap-version: ${{ matrix.gap-version }}
       - uses: ./this-action/
         with:
           build-extensions: false
