@@ -76,7 +76,6 @@ runs:
           todo := [ orig ];;
           curr := orig;;
           done := [];;
-          depth := 1;;
           pkgs := [];;
 
           build_pkg_check := function( info, field, mode )
