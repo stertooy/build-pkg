@@ -230,7 +230,7 @@ runs:
         if [[ -x prerequisites.sh ]]; then
           ./prerequisites.sh $GAPROOT
         fi
-        if [[ -x autogen.sh ]]; then
+        if [[ -x autogen.sh && ! -x configure ]]
           ./autogen.sh
         fi
         if [[ -x configure ]]; then
