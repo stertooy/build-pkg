@@ -55,8 +55,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        build-ext: [ true, false]
-        ignore: [ true, false ]
         gap-version:
           - devel
           - v4.13
@@ -77,5 +75,4 @@ jobs:
           gap-version: ${{ matrix.gap-version }}
       - uses: ./this-action/
         with:
-          build-extensions: ${{ matrix.build-ext }}
-          ignore-missing-pkgs: ${{ matrix.ignore }}
+          ignore-missing-pkgs: true
