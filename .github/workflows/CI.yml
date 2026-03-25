@@ -75,4 +75,4 @@ jobs:
           gap-version: ${{ matrix.gap-version }}
       - uses: ./this-action/
         with:
-          build-extensions: false
+          ignore-missing-pkgs: true
