@@ -109,7 +109,6 @@ runs:
           while not IsEmpty( todo ) do
             curr := Remove( todo );
             Print( "Now handling package '", curr, "'\n");
-            AddSet( done, curr );
 
             if not IsBound( GAPInfo.PackagesInfo.(curr) ) then
               msg := Concatenation( "Package '", curr, "' could not be found." );
@@ -121,6 +120,8 @@ runs:
                 FORCE_QUIT_GAP(1);
               fi;
             fi;
+            
+            AddSet( done, curr );
             info := GAPInfo.PackagesInfo.(curr)[1];
 
             # Needed packages
