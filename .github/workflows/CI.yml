@@ -74,5 +74,3 @@ jobs:
         with:
           gap-version: ${{ matrix.gap-version }}
       - uses: ./this-action/
-        with:
-          ignore-missing-pkgs: true
