@@ -33,10 +33,6 @@ inputs:
     description: 'Additional packages to build that do not appear in `PackageInfo.g`. Should be a space- or newline-separated list.'
     required: false
     default: ''
-  ignore-missing-pkgs:
-    description: 'Boolean that determines whether this action should throw an error or not when a package is missing.'
-    required: false
-    default: 'false'
 
 runs:
   using: "composite"
@@ -111,14 +107,10 @@ runs:
             Print( "Now handling package '", curr, "'\n");
 
             if not IsBound( GAPInfo.PackagesInfo.(curr) ) then
-              msg := Concatenation( "Package '", curr, "' could not be found." );
-              if "${{ inputs.ignore-missing-pkgs }}" = "true" then
-                Exec( Concatenation( "echo \"::warning::", msg, "\"" ) );
-                continue;
-              else
-                Exec( Concatenation( "echo \"::error::", msg, "\"" ) );
-                FORCE_QUIT_GAP(1);
-              fi;
+              Exec( Concatenation(
+                "echo \"::warning::Package '", curr, "' could not be found.\""
+              ));
+              continue;
             fi;
             
             AddSet( done, curr );
