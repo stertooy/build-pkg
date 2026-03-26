@@ -40,9 +40,6 @@ All of the following inputs are optional.
 - `extra-pkgs`:
   - Additional packages to build that do not appear in `PackageInfo.g`. Should be a space- or newline-separated list.
   - default: `''`
-- `ignore-missing-pkgs`:
-  - Boolean that determines whether this action should throw an error or not when a package is missing.
-  - default: `'false'`
     
 ### What's new in v3
 
@@ -54,9 +51,6 @@ All of the following inputs are optional.
   will also compile the dependencies' dependencies, etc.
 - The input `extra-pkgs` was added. You can use this to build any additional packages
   that do not appear in the `PackageInfo.g` file.
-- The input `ignore-missing-pkgs` was added. When this action cannot find a package
-  it is supposed to build, it will throw an error. By setting this input to 'true' it
-  will throw a warning instead.
 - The `ABI` input was dropped. It previously made it easy to build 32-bit versions of
   packages, but we are phasing that out, so workflows should stop passing this input.
 - The `CONFIGFLAGS` input was renamed to `configflags`.
