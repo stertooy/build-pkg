@@ -105,6 +105,14 @@ runs:
           while not IsEmpty( todo ) do
             curr := Remove( todo );
             Print( "Now handling package '", curr, "'\n");
+
+            if not IsBound( GAPInfo.PackagesInfo.(curr) ) then
+              Exec( Concatenation(
+                "echo \"::warning::Package '", curr, "' could not be found.\""
+              ));
+              continue;
+            fi;
+            
             AddSet( done, curr );
             info := GAPInfo.PackagesInfo.(curr)[1];
 
