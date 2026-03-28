@@ -176,9 +176,9 @@ runs:
           QUIT;
         GAPInput
 
-        # ... so put the contents in an environement variable ...
-        echo "GAP_PKGS_TO_BUILD=$(cat __GAP_PKGS_TO_BUILD__.txt)" | tee -a $GITHUB_ENV
-        echo "SYS_PKGS_TO_BUILD=$(cat __SYS_PKGS_TO_BUILD__.txt)" | tee -a $GITHUB_ENV
+        # ... so put the contents in an environement variable (after removing linebreaks)...
+        echo "GAP_PKGS_TO_BUILD=$(tr -d '\n' < __GAP_PKGS_TO_BUILD__.txt)" | tee -a $GITHUB_ENV
+        echo "SYS_PKGS_TO_BUILD=$(tr -d '\n' < __SYS_PKGS_TO_BUILD__.txt)" | tee -a $GITHUB_ENV
 
         # ... and we ensure no file is left behind.
         rm __GAP_PKGS_TO_BUILD__.txt
