@@ -241,6 +241,6 @@ runs:
         done
 
         # Only run if array is nonempty, otherwise this tries to build all packages
-        if [[ -z ${pkgdirs[@]} ]]; then
+        if [[ -n ${pkgdirs[@]} ]]; then
           ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
         fi
