@@ -239,5 +239,8 @@ runs:
             pkgdirs+=("${d#./}")
           done < <(find . -maxdepth 1 -type d -iname "${pkgdir}-*")
         done
-        
-        ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
+
+        # Only run if array is nonempty, otherwise this tries to build all packages
+        if [[ -z ${pkgdirs[@]} ]]; then
+          ../bin/BuildPackages.sh --strict ${pkgdirs[@]}
+        fi
