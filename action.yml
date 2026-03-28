@@ -188,9 +188,9 @@ runs:
       shell: bash
       run: |
         if [[ "${{ runner.os }}" == "Linux" ]] && [[ -n "${SYS_PKGS_TO_BUILD}" ]]; then
-          sudo apt-get install --no-install-recommends "${SYS_PKGS_TO_BUILD}"
+          sudo apt-get install --no-install-recommends ${SYS_PKGS_TO_BUILD}
         elif [[ "${{ runner.os }}" = "macOS" ]] && [[ -n "${SYS_PKGS_TO_BUILD}" ]]; then
-          brew install "${SYS_PKGS_TO_BUILD}"
+          brew install ${SYS_PKGS_TO_BUILD}
         fi
 
     - name: "Build the package itself"
